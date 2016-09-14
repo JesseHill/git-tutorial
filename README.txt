@@ -1,11 +1,3 @@
-# Fixes needed
-git bisect good HASH is bad
-
-exit 0 in hooks needs to be exit 1
-
-Explain pack files
-git gc --prune=all
-
 # Git - Under the Hood
 This tutorial covers a few interesting git topics. We'll talk about:
 - .git Folder Contents
@@ -42,7 +34,7 @@ What's in that **HEAD** file?
 $ cat .git/HEAD
 ref: refs/heads/master
 ```
-Our head defaults to master. That seems reasonable. What if we look at our repository's history?
+Our HEAD file is just a text file that lists a git ref that the HEAD should point to. The HEAD ref defaults to master. That seems reasonable. What if we look at our repository's history?
 ```bash
 $ git log
 fatal: bad default revision 'HEAD'
@@ -64,13 +56,13 @@ $ git branch
 So, we don't have a branch yet either. When we make our first commit, we'll automagically get a master ref.
 ```bash
 $ echo "Hi" >> hello.txt && git add . && git commit -m "Hello"
-[master (root-commit) bbb73da] Hello
+[master (root-commit) f31e784] Hello
  1 file changed, 1 insertion(+)
  create mode 100644 hello.txt
 $ ls .git/refs/heads
 master
 ```
-Ok, so there it is - we have a master now. 
+Ok, so there it is - we have a **master** now. 
 
 What if we create a new branch and then check again?
 ```bash
@@ -86,7 +78,12 @@ $ tree .git/refs/
 
 2 directories, 2 files
 ```
-So we have some idea now where git stores information about our branches.
+So we have some idea now where git stores information about our branches. Let's take a look at what's in the master ref file.
+```bash
+$ cat .git/refs/heads/master
+f31e784077dd3cdf6ba0c8b0cb6a63c7f568a012
+```
+So again, this is just a text file. It lists the hash of the commit that the **master** ref points to. 
 
 Let's take a look in the config file.
 ```bash
@@ -133,7 +130,7 @@ done.
 	remote = origin
 	merge = refs/heads/develop
 ```
-We can see that we don't have the alias cloned to the new repository. The config contents are local to the copy of the repository.
+We can see that we don't have the alias in the cloned repository. The config contents are local to the copy of the repository.
 
 Let's clean up and go back to our original repository:
 
@@ -164,7 +161,7 @@ What's that thing for? Why not just use .gitignore? Well, you'll mostly use .git
 
 ## Git Objects
 ### Blobs
-Let's start with a clean repo again and add a file:
+Let's start with a clean repository again and add a file:
 
 ```bash
 $ cd .. && rm -rf temp-repo && mkdir temp-repo && cd temp-repo && git init
@@ -215,8 +212,8 @@ That looks like what we expected. What's the type of that thing?
 $ git cat-file -t d65a
 blob
 ```
-It's a blob. How exciting.
-> A blob is a Binary Large Object. They're generally used to store larger objects that have an unknown format - they're typically used for images, audio, or executables in a database. In git they're used to store the content of files in the working directory.
+It's a blob. How exciting!
+> A blob is a Binary Large Object. They're used to store larger objects that have an unknown format - typically for images, audio, or executables in a database. In git they're used to store the content of all files in the working directory.
 
 Let's look at the format of the file itself. Create a ruby script that looks like this:
 ```ruby
@@ -227,7 +224,7 @@ content = File.open(filename, 'rb') { |f| f.read }
 unzipped = Zlib::Inflate.inflate(content)
 puts unzipped
 ```
-The script inflates a file's contents and prints them to the console. I've named my script decode-commit.rb.
+The script inflates a file's contents and prints them to the console. I've named my script **decode-commit.rb**.
 
 Let's run it on our object file:
 ```bash
@@ -285,7 +282,7 @@ $ tree .git/objects/
 
 5 directories, 3 files
 ```
-We're starting to get a lot of objects to look through. In order to help out, let's write a quick *cat-objects.rb* script with this content:
+We're starting to get a lot of objects to look through. In order to help out, let's write a quick *cat-objects.rb* script - open a file and paste in this content:
 ```ruby
 #!/usr/bin/ruby
 require 'find'
@@ -302,7 +299,7 @@ Find.find(".git/objects") do |path|
   end
 end
 ```
-Now we can run the script to cat out our objects:
+Now we can run the script to *cat* out our objects:
 ```bash
 $ ruby cat-objects.rb
 Hash: 56cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
@@ -380,7 +377,9 @@ $ git add another-comment-copy.txt
 $ find .git/objects -type f | wc -l
        5
 ```
-Interesting! Did you expect 6? We still have 5, so no new object was created! If we stop and think about what we've learned so far though, this should make sense. Git stores the file by writing it to a path based on the file content hash. Since the content is identical, git writes to the same location, so there's no duplicated version of the file.
+Woah! Interesting! Did you expect 6? We still have 5, so no new object was created!
+
+If we stop and think about what we've learned so far though, this should make sense. Git stores the file by writing it to a path based on the file content hash. Since the content is identical, git writes to the same location, so there's no duplicated version of the file.
 
 Now let's commit and look at the new objects.
 ```bash
@@ -905,11 +904,11 @@ $ git bisect bad
 ```
 Now we need to tell it when we were last in a good state. It's ok to err on the side of caution here. Let's pick our root commit:
 ```bash
-$ git bisect good da08c
+$ git bisect good HEAD~7
 Bisecting: 3 revisions left to test after this (roughly 2 steps)
 [ee6302a1a9fd368fc54a50db48bf37d350d5d332] Yet another useless comment
 ```
-So, what's happened is that git has checked out commit ee63 and put us into a detached HEAD state. We can confirm this:
+So, what's happened is that git has checked out commit ee63 and put us into a detached HEAD state. We can confirm this (your hash will vary):
 ```bash
 $ cat .git/HEAD
 ee6302a1a9fd368fc54a50db48bf37d350d5d332
@@ -963,7 +962,7 @@ $ cp pre-commit.sample pre-commit
 Edit the pre-commit file to look like:
 ```bash
   1 echo "No commits for you!"
-  2 exit 0
+  2 exit 1
 ```
 Now save and exit. You may need to make the file executable, if it isn't already. Then try a commit:
 ```bash
@@ -1012,6 +1011,9 @@ $ tree .git/objects
 ```
 Woah, that's interesting. We have pack files now instead of objects. I expect the **git gc** output will look familiar to you, you've likely seen it when running other commands like git push. Git normally runs this on it's own at appropriate times to keep the repository size down.
 
+The objects we've seen up to this point are called "loose objects" - they've been zipped versions of a file's content. With small files, this is no big deal, but you can imagine that having lots of versions of very large files would be a problem. **git gc** packs the loose objects into pack files. Pack files store the full contents of the file once and then deltas from the file for the other versions.
+
+
 Let's try one more thing:
 ```bash
 $ echo "Howdy there" >> hello.txt && git add .
@@ -1042,3 +1044,15 @@ $ tree .git/objects
 3 directories, 4 files
 ```
 So that's interesting. **git gc** didn't remove the dangling blob. It turns out **git gc** only prunes objects older than a given threshold. See the [git gc doc](https://git-scm.com/docs/git-gc) for configuration options.
+
+Let's try one more thing:
+```bash
+$ git gc --prune=all
+Counting objects: 3, done.
+Writing objects: 100% (3/3), done.
+Total 3 (delta 0), reused 3 (delta 0)
+$ git fsck
+Checking object directories: 100% (256/256), done.
+Checking objects: 100% (3/3), done.
+```
+And now the dangling blob has been pruned. It's gone forever!
