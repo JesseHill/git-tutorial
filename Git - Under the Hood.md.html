@@ -1,0 +1,924 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Git - Under the Hood.md</title><style>@import 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.2.0/katex.min.css';code{color:#c7254e;background-color:#f9f2f4;border-radius:4px}code,kbd{padding:2px 4px}kbd{color:#fff;background-color:#333;border-radius:3px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}kbd kbd{padding:0;font-size:100%;box-shadow:none}pre{display:block;margin:0 0 10px;word-break:break-all;word-wrap:break-word;color:#333;background-color:#f5f5f5;border:1px solid #ccc;border-radius:4px}pre code{padding:0;font-size:inherit;color:inherit;white-space:pre-wrap;background-color:transparent;border-radius:0}.pre-scrollable{max-height:340px;overflow-y:scroll}table{background-color:transparent}th{text-align:left}.table{width:100%;max-width:100%;margin-bottom:20px}.table>thead>tr>th{padding:8px;line-height:1.4285714;border-top:1px solid #ddd}.table>thead>tr>td,.table>tbody>tr>th,.table>tbody>tr>td,.table>tfoot>tr>th,.table>tfoot>tr>td{padding:8px;line-height:1.4285714;vertical-align:top;border-top:1px solid #ddd}.table>thead>tr>th{vertical-align:bottom;border-bottom:2px solid #ddd}.table>caption+thead>tr:first-child>th,.table>caption+thead>tr:first-child>td,.table>colgroup+thead>tr:first-child>th,.table>colgroup+thead>tr:first-child>td,.table>thead:first-child>tr:first-child>th,.table>thead:first-child>tr:first-child>td{border-top:0}.table>tbody+tbody{border-top:2px solid #ddd}.table .table{background-color:#fff}.table-condensed>thead>tr>th,.table-condensed>thead>tr>td,.table-condensed>tbody>tr>th,.table-condensed>tbody>tr>td,.table-condensed>tfoot>tr>th,.table-condensed>tfoot>tr>td{padding:5px}.table-bordered,.table-bordered>thead>tr>th,.table-bordered>thead>tr>td,.table-bordered>tbody>tr>th,.table-bordered>tbody>tr>td,.table-bordered>tfoot>tr>th,.table-bordered>tfoot>tr>td{border:1px solid #ddd}.table-bordered>thead>tr>th,.table-bordered>thead>tr>td{border-bottom-width:2px}.table-striped>tbody>tr:nth-child(odd)>td,.table-striped>tbody>tr:nth-child(odd)>th{background-color:#f9f9f9}.table-hover>tbody>tr:hover>td,.table-hover>tbody>tr:hover>th{background-color:#f5f5f5}table col[class*="col-"]{position:static;float:none;display:table-column}table td[class*="col-"],table th[class*="col-"]{position:static;float:none;display:table-cell}.table>thead>tr>td.active,.table>thead>tr>th.active,.table>thead>tr.active>td,.table>thead>tr.active>th,.table>tbody>tr>td.active,.table>tbody>tr>th.active,.table>tbody>tr.active>td,.table>tbody>tr.active>th,.table>tfoot>tr>td.active,.table>tfoot>tr>th.active,.table>tfoot>tr.active>td,.table>tfoot>tr.active>th{background-color:#f5f5f5}.table-hover>tbody>tr>td.active:hover,.table-hover>tbody>tr>th.active:hover,.table-hover>tbody>tr.active:hover>td,.table-hover>tbody>tr:hover>.active,.table-hover>tbody>tr.active:hover>th{background-color:#e8e8e8}.table>thead>tr>td.success,.table>thead>tr>th.success,.table>thead>tr.success>td,.table>thead>tr.success>th,.table>tbody>tr>td.success,.table>tbody>tr>th.success,.table>tbody>tr.success>td,.table>tbody>tr.success>th,.table>tfoot>tr>td.success,.table>tfoot>tr>th.success,.table>tfoot>tr.success>td,.table>tfoot>tr.success>th{background-color:#dff0d8}.table-hover>tbody>tr>td.success:hover,.table-hover>tbody>tr>th.success:hover,.table-hover>tbody>tr.success:hover>td,.table-hover>tbody>tr:hover>.success,.table-hover>tbody>tr.success:hover>th{background-color:#d0e9c6}.table>thead>tr>td.info,.table>thead>tr>th.info,.table>thead>tr.info>td,.table>thead>tr.info>th,.table>tbody>tr>td.info,.table>tbody>tr>th.info,.table>tbody>tr.info>td,.table>tbody>tr.info>th,.table>tfoot>tr>td.info,.table>tfoot>tr>th.info,.table>tfoot>tr.info>td,.table>tfoot>tr.info>th{background-color:#d9edf7}.table-hover>tbody>tr>td.info:hover,.table-hover>tbody>tr>th.info:hover,.table-hover>tbody>tr.info:hover>td,.table-hover>tbody>tr:hover>.info,.table-hover>tbody>tr.info:hover>th{background-color:#c4e3f3}.table>thead>tr>td.warning,.table>thead>tr>th.warning,.table>thead>tr.warning>td,.table>thead>tr.warning>th,.table>tbody>tr>td.warning,.table>tbody>tr>th.warning,.table>tbody>tr.warning>td,.table>tbody>tr.warning>th,.table>tfoot>tr>td.warning,.table>tfoot>tr>th.warning,.table>tfoot>tr.warning>td,.table>tfoot>tr.warning>th{background-color:#fcf8e3}.table-hover>tbody>tr>td.warning:hover,.table-hover>tbody>tr>th.warning:hover,.table-hover>tbody>tr.warning:hover>td,.table-hover>tbody>tr:hover>.warning,.table-hover>tbody>tr.warning:hover>th{background-color:#faf2cc}.table>thead>tr>td.danger,.table>thead>tr>th.danger,.table>thead>tr.danger>td,.table>thead>tr.danger>th,.table>tbody>tr>td.danger,.table>tbody>tr>th.danger,.table>tbody>tr.danger>td,.table>tbody>tr.danger>th,.table>tfoot>tr>td.danger,.table>tfoot>tr>th.danger,.table>tfoot>tr.danger>td,.table>tfoot>tr.danger>th{background-color:#f2dede}.table-hover>tbody>tr>td.danger:hover,.table-hover>tbody>tr>th.danger:hover,.table-hover>tbody>tr.danger:hover>td,.table-hover>tbody>tr:hover>.danger,.table-hover>tbody>tr.danger:hover>th{background-color:#ebcccc}fieldset{border:0;min-width:0}legend{display:block;width:100%;margin-bottom:20px;font-size:21px;line-height:inherit;color:#333;border-bottom:1px solid #e5e5e5}label{display:inline-block;max-width:100%;margin-bottom:5px;font-weight:700}input[type="radio"],input[type="checkbox"]{margin:4px 0 0;margin-top:1px \9;line-height:normal}input[type="file"]{display:block}input[type="range"]{display:block;width:100%}select[multiple],select[size]{height:auto}input[type="file"]:focus,input[type="radio"]:focus,input[type="checkbox"]:focus{outline:thin dotted;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}output{padding-top:7px}output,.form-control{display:block;font-size:14px;line-height:1.4285714;color:#555}.form-control{width:100%;height:34px;padding:6px 12px;background-color:#fff;background-image:none;border:1px solid #ccc;border-radius:4px;box-shadow:inset 0 1px 1px rgba(0,0,0,.075);-webkit-transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s;transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s}.form-control:focus{border-color:#66afe9;outline:0;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)}.form-control::-moz-placeholder{color:#777;opacity:1}.form-control:-ms-input-placeholder{color:#777}.form-control::-webkit-input-placeholder{color:#777}.form-control[disabled],.form-control[readonly],fieldset[disabled] .form-control{cursor:not-allowed;background-color:#eee;opacity:1}textarea.form-control{height:auto}input[type="date"],input[type="time"],input[type="datetime-local"],input[type="month"]{line-height:34px;line-height:1.4285714 \0}input[type="date"].input-sm,.form-horizontal .form-group-sm input[type="date"].form-control,.input-group-sm>input[type="date"].form-control,.input-group-sm>input[type="date"].input-group-addon,.input-group-sm>.input-group-btn>input[type="date"].btn,input[type="time"].input-sm,.form-horizontal .form-group-sm input[type="time"].form-control,.input-group-sm>input[type="time"].form-control,.input-group-sm>input[type="time"].input-group-addon,.input-group-sm>.input-group-btn>input[type="time"].btn,input[type="datetime-local"].input-sm,.form-horizontal .form-group-sm input[type="datetime-local"].form-control,.input-group-sm>input[type="datetime-local"].form-control,.input-group-sm>input[type="datetime-local"].input-group-addon,.input-group-sm>.input-group-btn>input[type="datetime-local"].btn,input[type="month"].input-sm,.form-horizontal .form-group-sm input[type="month"].form-control,.input-group-sm>input[type="month"].form-control,.input-group-sm>input[type="month"].input-group-addon,.input-group-sm>.input-group-btn>input[type="month"].btn{line-height:30px}input[type="date"].input-lg,.form-horizontal .form-group-lg input[type="date"].form-control,.input-group-lg>input[type="date"].form-control,.input-group-lg>input[type="date"].input-group-addon,.input-group-lg>.input-group-btn>input[type="date"].btn,input[type="time"].input-lg,.form-horizontal .form-group-lg input[type="time"].form-control,.input-group-lg>input[type="time"].form-control,.input-group-lg>input[type="time"].input-group-addon,.input-group-lg>.input-group-btn>input[type="time"].btn,input[type="datetime-local"].input-lg,.form-horizontal .form-group-lg input[type="datetime-local"].form-control,.input-group-lg>input[type="datetime-local"].form-control,.input-group-lg>input[type="datetime-local"].input-group-addon,.input-group-lg>.input-group-btn>input[type="datetime-local"].btn,input[type="month"].input-lg,.form-horizontal .form-group-lg input[type="month"].form-control,.input-group-lg>input[type="month"].form-control,.input-group-lg>input[type="month"].input-group-addon,.input-group-lg>.input-group-btn>input[type="month"].btn{line-height:46px}.form-group{margin-bottom:15px}.radio,.checkbox{position:relative;display:block;min-height:20px;margin-top:10px;margin-bottom:10px}.radio label,.checkbox label{padding-left:20px;margin-bottom:0;font-weight:400;cursor:pointer}.radio input[type="radio"],.radio-inline input[type="radio"],.checkbox input[type="checkbox"],.checkbox-inline input[type="checkbox"]{position:absolute;margin-left:-20px;margin-top:4px \9}.radio+.radio,.checkbox+.checkbox{margin-top:-5px}.radio-inline,.checkbox-inline{display:inline-block;padding-left:20px;margin-bottom:0;vertical-align:middle;font-weight:400;cursor:pointer}.radio-inline+.radio-inline,.checkbox-inline+.checkbox-inline{margin-top:0;margin-left:10px}input[type="radio"][disabled],input[type="radio"].disabled,fieldset[disabled] input[type="radio"],input[type="checkbox"][disabled],input[type="checkbox"].disabled,fieldset[disabled] input[type="checkbox"],.radio-inline.disabled,fieldset[disabled] .radio-inline,.checkbox-inline.disabled,fieldset[disabled] .checkbox-inline,.radio.disabled label,fieldset[disabled] .radio label,.checkbox.disabled label,fieldset[disabled] .checkbox label{cursor:not-allowed}.form-control-static{padding-top:7px;padding-bottom:7px;margin-bottom:0}.form-control-static.input-lg,.form-horizontal .form-group-lg .form-control-static.form-control,.input-group-lg>.form-control-static.form-control,.input-group-lg>.form-control-static.input-group-addon,.input-group-lg>.input-group-btn>.form-control-static.btn,.form-control-static.input-sm,.form-horizontal .form-group-sm .form-control-static.form-control,.input-group-sm>.form-control-static.form-control,.input-group-sm>.form-control-static.input-group-addon,.input-group-sm>.input-group-btn>.form-control-static.btn{padding-left:0;padding-right:0}.input-sm,.form-horizontal .form-group-sm .form-control,.input-group-sm>.form-control{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}.input-group-sm>.input-group-addon{height:30px;line-height:1.5}.input-group-sm>.input-group-btn>.btn{height:30px;padding:5px 10px;font-size:12px;line-height:1.5;border-radius:3px}select.input-sm,.form-horizontal .form-group-sm select.form-control,.input-group-sm>select.form-control,.input-group-sm>select.input-group-addon,.input-group-sm>.input-group-btn>select.btn{height:30px;line-height:30px}textarea.input-sm,.form-horizontal .form-group-sm textarea.form-control,.input-group-sm>textarea.form-control,.input-group-sm>textarea.input-group-addon,.input-group-sm>.input-group-btn>textarea.btn,select[multiple].input-sm,.form-horizontal .form-group-sm select[multiple].form-control,.input-group-sm>select[multiple].form-control,.input-group-sm>select[multiple].input-group-addon,.input-group-sm>.input-group-btn>select[multiple].btn{height:auto}.input-lg,.form-horizontal .form-group-lg .form-control,.input-group-lg>.form-control{height:46px;padding:10px 16px;font-size:18px;line-height:1.33;border-radius:6px}.input-group-lg>.input-group-addon{height:46px;line-height:1.33}.input-group-lg>.input-group-btn>.btn{height:46px;padding:10px 16px;font-size:18px;line-height:1.33;border-radius:6px}select.input-lg,.form-horizontal .form-group-lg select.form-control,.input-group-lg>select.form-control,.input-group-lg>select.input-group-addon,.input-group-lg>.input-group-btn>select.btn{height:46px;line-height:46px}textarea.input-lg,.form-horizontal .form-group-lg textarea.form-control,.input-group-lg>textarea.form-control,.input-group-lg>textarea.input-group-addon,.input-group-lg>.input-group-btn>textarea.btn,select[multiple].input-lg,.form-horizontal .form-group-lg select[multiple].form-control,.input-group-lg>select[multiple].form-control,.input-group-lg>select[multiple].input-group-addon,.input-group-lg>.input-group-btn>select[multiple].btn{height:auto}.has-feedback{position:relative}.has-feedback .form-control{padding-right:42.5px}.form-control-feedback{position:absolute;top:25px;right:0;z-index:2;display:block;width:34px;height:34px;line-height:34px;text-align:center}.input-lg+.form-control-feedback,.form-horizontal .form-group-lg .form-control+.form-control-feedback,.input-group-lg>.form-control+.form-control-feedback,.input-group-lg>.input-group-addon+.form-control-feedback,.input-group-lg>.input-group-btn>.btn+.form-control-feedback{width:46px;height:46px;line-height:46px}.input-sm+.form-control-feedback,.form-horizontal .form-group-sm .form-control+.form-control-feedback,.input-group-sm>.form-control+.form-control-feedback,.input-group-sm>.input-group-addon+.form-control-feedback,.input-group-sm>.input-group-btn>.btn+.form-control-feedback{width:30px;height:30px;line-height:30px}.has-success .help-block,.has-success .control-label,.has-success .radio,.has-success .checkbox,.has-success .radio-inline,.has-success .checkbox-inline{color:#3c763d}.has-success .form-control{border-color:#3c763d;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-success .form-control:focus{border-color:#2b542c;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #67b168}.has-success .input-group-addon{color:#3c763d;border-color:#3c763d;background-color:#dff0d8}.has-success .form-control-feedback{color:#3c763d}.has-warning .help-block,.has-warning .control-label,.has-warning .radio,.has-warning .checkbox,.has-warning .radio-inline,.has-warning .checkbox-inline{color:#8a6d3b}.has-warning .form-control{border-color:#8a6d3b;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-warning .form-control:focus{border-color:#66512c;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #c0a16b}.has-warning .input-group-addon{color:#8a6d3b;border-color:#8a6d3b;background-color:#fcf8e3}.has-warning .form-control-feedback{color:#8a6d3b}.has-error .help-block,.has-error .control-label,.has-error .radio,.has-error .checkbox,.has-error .radio-inline,.has-error .checkbox-inline{color:#a94442}.has-error .form-control{border-color:#a94442;box-shadow:inset 0 1px 1px rgba(0,0,0,.075)}.has-error .form-control:focus{border-color:#843534;box-shadow:inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483}.has-error .input-group-addon{color:#a94442;border-color:#a94442;background-color:#f2dede}.has-error .form-control-feedback{color:#a94442}.has-feedback label.sr-only~.form-control-feedback{top:0}.help-block{display:block;margin-top:5px;margin-bottom:10px;color:#737373}.form-horizontal .radio,.form-horizontal .checkbox,.form-horizontal .radio-inline,.form-horizontal .checkbox-inline{margin-top:0;margin-bottom:0;padding-top:7px}.form-horizontal .radio,.form-horizontal .checkbox{min-height:27px}.form-horizontal .form-group{margin-left:-15px;margin-right:-15px}.form-horizontal .form-group:before{content:" ";display:table}.form-horizontal .form-group:after{content:" ";display:table;clear:both}.form-horizontal .has-feedback .form-control-feedback{top:0;right:15px}.btn{display:inline-block;vertical-align:middle;cursor:pointer;background-image:none;border:1px solid transparent;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.btn:focus,.btn:active:focus,.btn.active:focus{outline:thin dotted;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px}.btn:hover,.btn:focus{color:#333;text-decoration:none}.btn:active,.btn.active{outline:0;background-image:none;box-shadow:inset 0 3px 5px rgba(0,0,0,.125)}.btn.disabled,.btn[disabled],fieldset[disabled] .btn{cursor:not-allowed;pointer-events:none;opacity:.65;filter:alpha(opacity=65);box-shadow:none}.btn-default{color:#333;background-color:#fff;border-color:#ccc}.btn-default:hover,.btn-default:focus,.btn-default:active,.btn-default.active,.open>.btn-default.dropdown-toggle{color:#333;background-color:#e6e6e6;border-color:#adadad}.btn-default:active,.btn-default.active,.open>.btn-default.dropdown-toggle{background-image:none}.btn-default.disabled,.btn-default.disabled:hover,.btn-default.disabled:focus,.btn-default.disabled:active,.btn-default.disabled.active,.btn-default[disabled],.btn-default[disabled]:hover,.btn-default[disabled]:focus,.btn-default[disabled]:active,.btn-default[disabled].active,fieldset[disabled] .btn-default,fieldset[disabled] .btn-default:hover,fieldset[disabled] .btn-default:focus,fieldset[disabled] .btn-default:active,fieldset[disabled] .btn-default.active{background-color:#fff;border-color:#ccc}.btn-default .badge{color:#fff;background-color:#333}.btn-primary{color:#fff;background-color:#428bca;border-color:#357ebd}.btn-primary:hover,.btn-primary:focus,.btn-primary:active,.btn-primary.active,.open>.btn-primary.dropdown-toggle{color:#fff;background-color:#3071a9;border-color:#285e8e}.btn-primary:active,.btn-primary.active,.open>.btn-primary.dropdown-toggle{background-image:none}.btn-primary.disabled,.btn-primary.disabled:hover,.btn-primary.disabled:focus,.btn-primary.disabled:active,.btn-primary.disabled.active,.btn-primary[disabled],.btn-primary[disabled]:hover,.btn-primary[disabled]:focus,.btn-primary[disabled]:active,.btn-primary[disabled].active,fieldset[disabled] .btn-primary,fieldset[disabled] .btn-primary:hover,fieldset[disabled] .btn-primary:focus,fieldset[disabled] .btn-primary:active,fieldset[disabled] .btn-primary.active{background-color:#428bca;border-color:#357ebd}.btn-primary .badge{color:#428bca;background-color:#fff}.btn-success{color:#fff;background-color:#5cb85c;border-color:#4cae4c}.btn-success:hover,.btn-success:focus,.btn-success:active,.btn-success.active,.open>.btn-success.dropdown-toggle{color:#fff;background-color:#449d44;border-color:#398439}.btn-success:active,.btn-success.active,.open>.btn-success.dropdown-toggle{background-image:none}.btn-success.disabled,.btn-success.disabled:hover,.btn-success.disabled:focus,.btn-success.disabled:active,.btn-success.disabled.active,.btn-success[disabled],.btn-success[disabled]:hover,.btn-success[disabled]:focus,.btn-success[disabled]:active,.btn-success[disabled].active,fieldset[disabled] .btn-success,fieldset[disabled] .btn-success:hover,fieldset[disabled] .btn-success:focus,fieldset[disabled] .btn-success:active,fieldset[disabled] .btn-success.active{background-color:#5cb85c;border-color:#4cae4c}.btn-success .badge{color:#5cb85c;background-color:#fff}.btn-info{color:#fff;background-color:#5bc0de;border-color:#46b8da}.btn-info:hover,.btn-info:focus,.btn-info:active,.btn-info.active,.open>.btn-info.dropdown-toggle{color:#fff;background-color:#31b0d5;border-color:#269abc}.btn-info:active,.btn-info.active,.open>.btn-info.dropdown-toggle{background-image:none}.btn-info.disabled,.btn-info.disabled:hover,.btn-info.disabled:focus,.btn-info.disabled:active,.btn-info.disabled.active,.btn-info[disabled],.btn-info[disabled]:hover,.btn-info[disabled]:focus,.btn-info[disabled]:active,.btn-info[disabled].active,fieldset[disabled] .btn-info,fieldset[disabled] .btn-info:hover,fieldset[disabled] .btn-info:focus,fieldset[disabled] .btn-info:active,fieldset[disabled] .btn-info.active{background-color:#5bc0de;border-color:#46b8da}.btn-info .badge{color:#5bc0de;background-color:#fff}.btn-warning{color:#fff;background-color:#f0ad4e;border-color:#eea236}.btn-warning:hover,.btn-warning:focus,.btn-warning:active,.btn-warning.active,.open>.btn-warning.dropdown-toggle{color:#fff;background-color:#ec971f;border-color:#d58512}.btn-warning:active,.btn-warning.active,.open>.btn-warning.dropdown-toggle{background-image:none}.btn-warning.disabled,.btn-warning.disabled:hover,.btn-warning.disabled:focus,.btn-warning.disabled:active,.btn-warning.disabled.active,.btn-warning[disabled],.btn-warning[disabled]:hover,.btn-warning[disabled]:focus,.btn-warning[disabled]:active,.btn-warning[disabled].active,fieldset[disabled] .btn-warning,fieldset[disabled] .btn-warning:hover,fieldset[disabled] .btn-warning:focus,fieldset[disabled] .btn-warning:active,fieldset[disabled] .btn-warning.active{background-color:#f0ad4e;border-color:#eea236}.btn-warning .badge{color:#f0ad4e;background-color:#fff}.btn-danger{color:#fff;background-color:#d9534f;border-color:#d43f3a}.btn-danger:hover,.btn-danger:focus,.btn-danger:active,.btn-danger.active,.open>.btn-danger.dropdown-toggle{color:#fff;background-color:#c9302c;border-color:#ac2925}.btn-danger:active,.btn-danger.active,.open>.btn-danger.dropdown-toggle{background-image:none}.btn-danger.disabled,.btn-danger.disabled:hover,.btn-danger.disabled:focus,.btn-danger.disabled:active,.btn-danger.disabled.active,.btn-danger[disabled],.btn-danger[disabled]:hover,.btn-danger[disabled]:focus,.btn-danger[disabled]:active,.btn-danger[disabled].active,fieldset[disabled] .btn-danger,fieldset[disabled] .btn-danger:hover,fieldset[disabled] .btn-danger:focus,fieldset[disabled] .btn-danger:active,fieldset[disabled] .btn-danger.active{background-color:#d9534f;border-color:#d43f3a}.btn-danger .badge{color:#d9534f;background-color:#fff}.btn-link{color:#428bca;font-weight:400;cursor:pointer;border-radius:0}.btn-link,.btn-link:active,.btn-link[disabled],fieldset[disabled] .btn-link{background-color:transparent;box-shadow:none}.btn-link,.btn-link:hover,.btn-link:focus,.btn-link:active{border-color:transparent}.btn-link:hover,.btn-link:focus{color:#2a6496;text-decoration:underline;background-color:transparent}.btn-link[disabled]:hover,.btn-link[disabled]:focus,fieldset[disabled] .btn-link:hover,fieldset[disabled] .btn-link:focus{color:#777;text-decoration:none}.btn-lg{padding:10px 16px;font-size:18px;line-height:1.33;border-radius:6px}.btn-sm{padding:5px 10px}.btn-sm,.btn-xs{font-size:12px;line-height:1.5;border-radius:3px}.btn-xs{padding:1px 5px}.btn-block{display:block;width:100%}.btn-block+.btn-block{margin-top:5px}input[type="submit"].btn-block,input[type="reset"].btn-block,input[type="button"].btn-block{width:100%}.fade{opacity:0;-webkit-transition:opacity .15s linear;transition:opacity .15s linear}.fade.in{opacity:1}.collapse{display:none}.collapse.in{display:block}tr.collapse.in{display:table-row}tbody.collapse.in{display:table-row-group}.collapsing{position:relative;height:0;overflow:hidden;-webkit-transition:height .35s ease;transition:height .35s ease}.input-group{position:relative;display:table;border-collapse:separate}.input-group[class*="col-"]{float:none;padding-left:0;padding-right:0}.input-group .form-control{position:relative;z-index:2;float:left;width:100%;margin-bottom:0}.input-group-addon,.input-group-btn,.input-group .form-control{display:table-cell}.input-group-addon:not(:first-child):not(:last-child),.input-group-btn:not(:first-child):not(:last-child),.input-group .form-control:not(:first-child):not(:last-child){border-radius:0}.input-group-addon{white-space:nowrap}.input-group-addon,.input-group-btn{width:1%;vertical-align:middle}.input-group-addon{padding:6px 12px;font-size:14px;font-weight:400;line-height:1;color:#555;text-align:center;background-color:#eee;border:1px solid #ccc;border-radius:4px}.input-group-addon.input-sm,.form-horizontal .form-group-sm .input-group-addon.form-control,.input-group-sm>.input-group-addon,.input-group-sm>.input-group-btn>.input-group-addon.btn{padding:5px 10px;font-size:12px;border-radius:3px}.input-group-addon.input-lg,.form-horizontal .form-group-lg .input-group-addon.form-control,.input-group-lg>.input-group-addon,.input-group-lg>.input-group-btn>.input-group-addon.btn{padding:10px 16px;font-size:18px;border-radius:6px}.input-group-addon input[type="radio"],.input-group-addon input[type="checkbox"]{margin-top:0}.input-group .form-control:first-child,.input-group-addon:first-child,.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group>.btn,.input-group-btn:first-child>.dropdown-toggle,.input-group-btn:last-child>.btn:not(:last-child):not(.dropdown-toggle),.input-group-btn:last-child>.btn-group:not(:last-child)>.btn{border-bottom-right-radius:0;border-top-right-radius:0}.input-group-addon:first-child{border-right:0}.input-group .form-control:last-child,.input-group-addon:last-child,.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group>.btn,.input-group-btn:last-child>.dropdown-toggle,.input-group-btn:first-child>.btn:not(:first-child),.input-group-btn:first-child>.btn-group:not(:first-child)>.btn{border-bottom-left-radius:0;border-top-left-radius:0}.input-group-addon:last-child{border-left:0}.input-group-btn{font-size:0;white-space:nowrap}.input-group-btn,.input-group-btn>.btn{position:relative}.input-group-btn>.btn+.btn{margin-left:-1px}.input-group-btn>.btn:hover,.input-group-btn>.btn:focus,.input-group-btn>.btn:active{z-index:2}.input-group-btn:first-child>.btn,.input-group-btn:first-child>.btn-group{margin-right:-1px}.input-group-btn:last-child>.btn,.input-group-btn:last-child>.btn-group{margin-left:-1px}.pagination{display:inline-block;padding-left:0;margin:20px 0;border-radius:4px}.pagination>li{display:inline}.pagination>li>a,.pagination>li>span{position:relative;float:left;padding:6px 12px;line-height:1.4285714;text-decoration:none;color:#428bca;background-color:#fff;border:1px solid #ddd;margin-left:-1px}.pagination>li:first-child>a,.pagination>li:first-child>span{margin-left:0;border-bottom-left-radius:4px;border-top-left-radius:4px}.pagination>li:last-child>a,.pagination>li:last-child>span{border-bottom-right-radius:4px;border-top-right-radius:4px}.pagination>li>a:hover,.pagination>li>a:focus,.pagination>li>span:hover,.pagination>li>span:focus{color:#2a6496;background-color:#eee;border-color:#ddd}.pagination>.active>a,.pagination>.active>a:hover,.pagination>.active>a:focus,.pagination>.active>span,.pagination>.active>span:hover,.pagination>.active>span:focus{z-index:2;color:#fff;background-color:#428bca;border-color:#428bca;cursor:default}.pagination>.disabled>span,.pagination>.disabled>span:hover,.pagination>.disabled>span:focus,.pagination>.disabled>a,.pagination>.disabled>a:hover,.pagination>.disabled>a:focus{color:#777;background-color:#fff;border-color:#ddd;cursor:not-allowed}.pagination-lg>li>a,.pagination-lg>li>span{padding:10px 16px;font-size:18px}.pagination-lg>li:first-child>a,.pagination-lg>li:first-child>span{border-bottom-left-radius:6px;border-top-left-radius:6px}.pagination-lg>li:last-child>a,.pagination-lg>li:last-child>span{border-bottom-right-radius:6px;border-top-right-radius:6px}.pagination-sm>li>a,.pagination-sm>li>span{padding:5px 10px;font-size:12px}.pagination-sm>li:first-child>a,.pagination-sm>li:first-child>span{border-bottom-left-radius:3px;border-top-left-radius:3px}.pagination-sm>li:last-child>a,.pagination-sm>li:last-child>span{border-bottom-right-radius:3px;border-top-right-radius:3px}.close{float:right;font-size:21px;font-weight:700;line-height:1;color:#000;text-shadow:0 1px 0 #fff;opacity:.2;filter:alpha(opacity=20)}.close:hover,.close:focus{color:#000;text-decoration:none;cursor:pointer;opacity:.5;filter:alpha(opacity=50)}button.close{padding:0;cursor:pointer;background:0 0;border:0;-webkit-appearance:none}.modal-open,.modal{overflow:hidden}.modal{display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:1050;-webkit-overflow-scrolling:touch;outline:0}.modal.fade .modal-dialog{-webkit-transform:translate3d(0,-25%,0);transform:translate3d(0,-25%,0);-webkit-transition:-webkit-transform .3s ease-out;transition:transform .3s ease-out;transition:transform .3s ease-out,-webkit-transform .3s ease-out}.modal.in .modal-dialog{-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0)}.modal-open .modal{overflow-x:hidden;overflow-y:auto}.modal-dialog{position:relative;width:auto;margin:10px}.modal-content{position:relative;background-color:#fff;border:1px solid #999;border:1px solid rgba(0,0,0,.2);border-radius:6px;box-shadow:0 3px 9px rgba(0,0,0,.5);background-clip:padding-box;outline:0}.modal-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1040;background-color:#000}.modal-backdrop.fade{opacity:0;filter:alpha(opacity=0)}.modal-backdrop.in{opacity:.5;filter:alpha(opacity=50)}.modal-header{padding:15px;border-bottom:1px solid #e5e5e5;min-height:16.4285714px}.modal-header .close{margin-top:-2px}.modal-title{margin:0;line-height:1.4285714}.modal-body{position:relative;padding:15px}.modal-footer{padding:15px;text-align:right;border-top:1px solid #e5e5e5}.modal-footer:before,.modal-footer:after{content:" ";display:table}.modal-footer:after{clear:both}.modal-footer .btn+.btn{margin-left:5px;margin-bottom:0}.modal-footer .btn-group .btn+.btn{margin-left:-1px}.modal-footer .btn-block+.btn-block{margin-left:0}.modal-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}.clearfix:before,.clearfix:after{content:" ";display:table}.clearfix:after{clear:both}.center-block{display:block;margin-left:auto;margin-right:auto}.pull-right{float:right!important}.pull-left{float:left!important}.hide{display:none!important}.show{display:block!important}.invisible{visibility:hidden}.text-hide{font:0/0 a;color:transparent;text-shadow:none;background-color:transparent;border:0}.hidden{display:none!important;visibility:hidden!important}.affix{position:fixed;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0)}.hljs{display:block;overflow-x:auto;padding:.5em;background:#002b36;color:#839496;-webkit-text-size-adjust:none}.hljs-comment,.hljs-template_comment,.diff .hljs-header,.hljs-doctype,.hljs-pi,.lisp .hljs-string,.hljs-javadoc{color:#586e75}.hljs-keyword,.hljs-winutils,.method,.hljs-addition,.css .hljs-tag,.hljs-request,.hljs-status,.nginx .hljs-title{color:#859900}.hljs-number,.hljs-command,.hljs-string,.hljs-tag .hljs-value,.hljs-rules .hljs-value,.hljs-phpdoc,.hljs-dartdoc,.tex .hljs-formula,.hljs-regexp,.hljs-hexcolor,.hljs-link_url{color:#2aa198}.hljs-title,.hljs-localvars,.hljs-chunk,.hljs-decorator,.hljs-built_in,.hljs-identifier,.vhdl .hljs-literal,.hljs-id,.css .hljs-function{color:#268bd2}.hljs-attribute,.hljs-variable,.lisp .hljs-body,.smalltalk .hljs-number,.hljs-constant,.hljs-class .hljs-title,.hljs-parent,.hljs-type,.hljs-link_reference{color:#b58900}.hljs-preprocessor,.hljs-preprocessor .hljs-keyword,.hljs-pragma,.hljs-shebang,.hljs-symbol,.hljs-symbol .hljs-string,.diff .hljs-change,.hljs-special,.hljs-attr_selector,.hljs-subst,.hljs-cdata,.css .hljs-pseudo,.hljs-header{color:#cb4b16}.hljs-deletion,.hljs-important{color:#dc322f}.hljs-link_label{color:#6c71c4}.tex .hljs-formula{background:#073642}*,*:before,*:after{box-sizing:border-box}html{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section,summary{display:block}audio,canvas,progress,video{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}[hidden],template{display:none}a{background:0 0}a:active,a:hover{outline:0}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:700}dfn{font-style:italic}h1{margin:.67em 0}mark{background:#ff0;color:#000}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}images{border:0}svg:not(:root){overflow:hidden}figure{margin:1em 40px}hr{box-sizing:content-box;height:0}pre{overflow:auto}code,kbd{font-size:1em}code,kbd,pre,samp{font-family:monospace,monospace}samp{font-size:1em}button,input,optgroup,select,textarea{color:inherit;font:inherit;margin:0}button{overflow:visible}button,select{text-transform:none}button,html input[type="button"],input[type="reset"],input[type="submit"]{-webkit-appearance:button;cursor:pointer}button[disabled],html input[disabled]{cursor:default}button::-moz-focus-inner,input::-moz-focus-inner{border:0;padding:0}input{line-height:normal}input[type="checkbox"],input[type="radio"]{box-sizing:border-box;padding:0}input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{height:auto}input[type="search"]{-webkit-appearance:textfield;box-sizing:content-box}input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance:none}fieldset{border:1px solid silver;margin:0 2px;padding:.35em .625em .75em}legend{border:0;padding:0}textarea{overflow:auto}optgroup{font-weight:700}table{border-collapse:collapse;border-spacing:0}.debug{background-color:#ffc0cb!important}.ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ir{background-color:transparent;border:0;overflow:hidden}.ir::before{content:'';display:block;height:150%;width:0}html{font-size:.875em;background:#fff;color:#373D49}html,body{font-family:Georgia,Cambria,serif;height:100%}body{font-size:1rem;font-weight:400;line-height:2rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}li{-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-left:1rem}li>ul,li>ol{margin-bottom:0}p{padding-top:.66001rem;-webkit-font-feature-settings:'kern' 1,'onum' 1,'liga' 1;font-feature-settings:'kern' 1,'onum' 1,'liga' 1;margin-top:0}p,pre{margin-bottom:1.33999rem}pre{font-size:1rem;padding:.66001rem 9.5px 9.5px;line-height:2rem;background:-webkit-linear-gradient(top,#fff 0,#fff .75rem,#f5f7fa .75rem,#f5f7fa 2.75rem,#fff 2.75rem,#fff 4rem);background:linear-gradient(to bottom,#fff 0,#fff .75rem,#f5f7fa .75rem,#f5f7fa 2.75rem,#fff 2.75rem,#fff 4rem);background-size:100% 4rem;border-color:#D3DAEA}blockquote{margin:0}blockquote p{font-size:1rem;margin-bottom:.33999rem;font-style:italic;padding:.66001rem 1rem 1rem;border-left:3px solid #A0AABF}th,td{padding:12px}h1,h2,h3,h4,h5,h6{font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-feature-settings:'dlig' 1,'liga' 1,'lnum' 1,'kern' 1;font-style:normal;font-weight:600;margin-top:0}h1{line-height:3rem;font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h2,h3{line-height:3rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}a{cursor:pointer;color:#35D7BB;text-decoration:none}a:hover,a:focus{border-bottom-color:#35D7BB;color:#dff9f4}img{height:auto;max-width:100%}.g{display:block}.g:after{clear:both;content:'';display:table}.g-b{float:left;margin:0;width:100%}.g{margin-left:-16px;margin-right:-16px}.g-b{padding-left:16px;padding-right:16px}.g-b--center{display:block;float:none;margin:0 auto}.g-b--right{float:right}.g-b--1of1{width:100%}.g-b--1of2,.g-b--2of4,.g-b--3of6,.g-b--4of8,.g-b--5of10,.g-b--6of12{width:50%}.g-b--1of3,.g-b--2of6,.g-b--4of12{width:33.333%}.g-b--2of3,.g-b--4of6,.g-b--8of12{width:66.666%}.g-b--1of4,.g-b--2of8,.g-b--3of12{width:25%}.g-b--3of4,.g-b--6of8,.g-b--9of12{width:75%}.g-b--1of5,.g-b--2of10{width:20%}.g-b--2of5,.g-b--4of10{width:40%}.g-b--3of5,.g-b--6of10{width:60%}.g-b--4of5,.g-b--8of10{width:80%}.g-b--1of6,.g-b--2of12{width:16.666%}.g-b--5of6,.g-b--10of12{width:83.333%}.g-b--1of8{width:12.5%}.g-b--3of8{width:37.5%}.g-b--5of8{width:62.5%}.g-b--7of8{width:87.5%}.g-b--1of10{width:10%}.g-b--3of10{width:30%}.g-b--7of10{width:70%}.g-b--9of10{width:90%}.g-b--1of12{width:8.333%}.g-b--5of12{width:41.666%}.g-b--7of12{width:58.333%}.g-b--11of12{width:91.666%}.g-b--push--1of1{margin-left:100%}.g-b--push--1of2,.g-b--push--2of4,.g-b--push--3of6,.g-b--push--4of8,.g-b--push--5of10,.g-b--push--6of12{margin-left:50%}.g-b--push--1of3,.g-b--push--2of6,.g-b--push--4of12{margin-left:33.333%}.g-b--push--2of3,.g-b--push--4of6,.g-b--push--8of12{margin-left:66.666%}.g-b--push--1of4,.g-b--push--2of8,.g-b--push--3of12{margin-left:25%}.g-b--push--3of4,.g-b--push--6of8,.g-b--push--9of12{margin-left:75%}.g-b--push--1of5,.g-b--push--2of10{margin-left:20%}.g-b--push--2of5,.g-b--push--4of10{margin-left:40%}.g-b--push--3of5,.g-b--push--6of10{margin-left:60%}.g-b--push--4of5,.g-b--push--8of10{margin-left:80%}.g-b--push--1of6,.g-b--push--2of12{margin-left:16.666%}.g-b--push--5of6,.g-b--push--10of12{margin-left:83.333%}.g-b--push--1of8{margin-left:12.5%}.g-b--push--3of8{margin-left:37.5%}.g-b--push--5of8{margin-left:62.5%}.g-b--push--7of8{margin-left:87.5%}.g-b--push--1of10{margin-left:10%}.g-b--push--3of10{margin-left:30%}.g-b--push--7of10{margin-left:70%}.g-b--push--9of10{margin-left:90%}.g-b--push--1of12{margin-left:8.333%}.g-b--push--5of12{margin-left:41.666%}.g-b--push--7of12{margin-left:58.333%}.g-b--push--11of12{margin-left:91.666%}.g-b--pull--1of1{margin-right:100%}.g-b--pull--1of2,.g-b--pull--2of4,.g-b--pull--3of6,.g-b--pull--4of8,.g-b--pull--5of10,.g-b--pull--6of12{margin-right:50%}.g-b--pull--1of3,.g-b--pull--2of6,.g-b--pull--4of12{margin-right:33.333%}.g-b--pull--2of3,.g-b--pull--4of6,.g-b--pull--8of12{margin-right:66.666%}.g-b--pull--1of4,.g-b--pull--2of8,.g-b--pull--3of12{margin-right:25%}.g-b--pull--3of4,.g-b--pull--6of8,.g-b--pull--9of12{margin-right:75%}.g-b--pull--1of5,.g-b--pull--2of10{margin-right:20%}.g-b--pull--2of5,.g-b--pull--4of10{margin-right:40%}.g-b--pull--3of5,.g-b--pull--6of10{margin-right:60%}.g-b--pull--4of5,.g-b--pull--8of10{margin-right:80%}.g-b--pull--1of6,.g-b--pull--2of12{margin-right:16.666%}.g-b--pull--5of6,.g-b--pull--10of12{margin-right:83.333%}.g-b--pull--1of8{margin-right:12.5%}.g-b--pull--3of8{margin-right:37.5%}.g-b--pull--5of8{margin-right:62.5%}.g-b--pull--7of8{margin-right:87.5%}.g-b--pull--1of10{margin-right:10%}.g-b--pull--3of10{margin-right:30%}.g-b--pull--7of10{margin-right:70%}.g-b--pull--9of10{margin-right:90%}.g-b--pull--1of12{margin-right:8.333%}.g-b--pull--5of12{margin-right:41.666%}.g-b--pull--7of12{margin-right:58.333%}.g-b--pull--11of12{margin-right:91.666%}.splashscreen{position:fixed;top:0;left:0;width:100%;height:100%;background-color:#373D49;z-index:22}.splashscreen-dillinger{width:260px;height:auto;display:block;margin:0 auto;padding-bottom:3rem}.splashscreen p{font-size:1.25rem;padding-top:.56251rem;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400;text-align:center;max-width:500px;margin:0 auto;color:#FFF}.sp-center{position:relative;-webkit-transform:translateY(-50%);transform:translateY(-50%);top:50%}.open-menu>.wrapper{overflow-x:hidden}.page{margin:0 auto;position:relative;top:0;left:0;width:100%;height:100%;z-index:2;-webkit-transition:all .25s ease-in-out;transition:all .25s ease-in-out;background-color:#fff;padding-top:51px;will-change:left}.open-menu .page{left:270px}.title{line-height:1rem;font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem;font-weight:500;color:#A0AABF;letter-spacing:1px;text-transform:uppercase;padding-left:16px;padding-right:16px;margin-top:1rem}.split-preview .title{padding-left:0}.title-document{line-height:1rem;font-size:1.25rem;margin-bottom:.89999rem;padding-top:.10001rem;font-weight:400;font-family:"Ubuntu Mono",Monaco;color:#373D49;padding-left:16px;padding-right:16px;width:80%;min-width:300px;outline:0;border:none}.icon{display:block;margin:0 auto;width:36px;height:36px;border-radius:3px;text-align:center}.icon svg{display:inline-block;margin-left:auto;margin-right:auto}.icon-preview{background-color:#373D49;line-height:40px}.icon-preview svg{width:19px;height:12px}.icon-settings{background-color:#373D49;line-height:44px}.icon-settings svg{width:18px;height:18px}.icon-link{width:16px;height:16px;line-height:1;margin-right:24px;text-align:right}.navbar{background-color:#373D49;height:51px;width:100%;position:fixed;top:0;left:0;z-index:6;-webkit-transition:all .25s ease-in-out;transition:all .25s ease-in-out;will-change:left}.navbar:after{content:"";display:table;clear:both}.open-menu .navbar{left:270px}.navbar-brand{float:left;margin:0 0 0 24px;padding:0;line-height:42px}.navbar-brand svg{width:85px;height:11px}.nav-left{float:left}.nav-right{float:right}.nav-sidebar{width:100%}.menu{list-style:none;margin:0;padding:0}.menu a{border:0;color:#A0AABF;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;outline:none;text-transform:uppercase}.menu a:hover{color:#35D7BB}.menu .menu-item{border:0;display:none;float:left;margin:0;position:relative}.menu .menu-item>a{display:block;font-size:12px;height:51px;letter-spacing:1px;line-height:51px;padding:0 24px}.menu .menu-item--settings,.menu .menu-item--preview,.menu .menu-item--save-to.in-sidebar,.menu .menu-item--import-from.in-sidebar,.menu .menu-item--link-unlink.in-sidebar,.menu .menu-item--documents.in-sidebar{display:block}.menu .menu-item--documents{padding-bottom:1rem}.menu .menu-item.open>a{background-color:#1D212A}.menu .menu-item-icon>a{height:auto;padding:0}.menu .menu-item-icon:hover>a{background-color:transparent}.menu .menu-link.open i{background-color:#1D212A}.menu .menu-link.open g{fill:#35D7BB}.menu .menu-link-preview,.menu .menu-link-settings{margin-top:8px;width:51px}.menu-sidebar{width:100%}.menu-sidebar .menu-item{float:none;margin-bottom:1px;width:100%}.menu-sidebar .menu-item.open>a{background-color:#373D49}.menu-sidebar .open .caret{-webkit-transform:rotate(180deg);transform:rotate(180deg)}.menu-sidebar>.menu-item:hover .dropdown a,.menu-sidebar>.menu-item:hover .settings a{background-color:transparent}.menu-sidebar .menu-link{background-color:#373D49;font-weight:600}.menu-sidebar .menu-link:after{content:"";display:table;clear:both}.menu-sidebar .menu-link>span{float:left}.menu-sidebar .menu-link>.caret{float:right;text-align:right;top:22px}.menu-sidebar .dropdown,.menu-sidebar .settings{background-color:transparent;position:static;width:100%}.dropdown{position:absolute;right:0;top:51px;width:188px}.dropdown,.settings{display:none;background-color:#1D212A}.dropdown{padding:0}.dropdown,.settings,.sidebar-list{list-style:none;margin:0}.sidebar-list{padding:0}.dropdown li{margin:32px 0;padding:0 0 0 32px}.dropdown li,.settings li{line-height:1}.sidebar-list li{line-height:1;margin:32px 0;padding:0 0 0 32px}.dropdown a{color:#D0D6E2}.dropdown a,.settings a,.sidebar-list a{display:block;text-transform:none}.sidebar-list a{color:#D0D6E2}.dropdown a:after,.settings a:after,.sidebar-list a:after{content:"";display:table;clear:both}.dropdown .icon,.settings .icon,.sidebar-list .icon{float:right}.open .dropdown,.open .settings,.open .sidebar-list{display:block}.open .dropdown.collapse,.open .collapse.settings,.open .sidebar-list.collapse{display:none}.open .dropdown.collapse.in,.open .collapse.in.settings,.open .sidebar-list.collapse.in{display:block}.dropdown .unlinked .icon,.settings .unlinked .icon,.sidebar-list .unlinked .icon{opacity:.3}.dropdown.documents li,.documents.settings li,.sidebar-list.documents li{background-image:url("../img/icons/file.svg");background-position:240px center;background-repeat:no-repeat;background-size:14px 16px;padding:3px 32px}.dropdown.documents li.octocat,.documents.settings li.octocat,.sidebar-list.documents li.octocat{background-image:url("../img/icons/octocat.svg");background-position:234px center;background-size:24px 24px}.dropdown.documents li:last-child,.documents.settings li:last-child,.sidebar-list.documents li:last-child{margin-bottom:1rem}.dropdown.documents li.active a,.documents.settings li.active a,.sidebar-list.documents li.active a{color:#35D7BB}.settings{position:fixed;top:67px;right:16px;border-radius:3px;width:288px;background-color:#373D49;padding:16px;z-index:7}.show-settings .settings{display:block}.settings .has-checkbox{float:left}.settings a{font-size:1.25rem;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;line-height:28px;color:#D0D6E2}.settings a:after{content:"";display:table;clear:both}.settings a:hover{color:#35D7BB}.settings li{border-bottom:1px solid #4F535B;margin:0;padding:16px 0}.settings li:last-child{border-bottom:none}.brand{border:none;display:block}.brand:hover g{fill:#35D7BB}.toggle{display:block;float:left;height:16px;padding:25px 16px 26px;width:40px}.toggle span:after,.toggle span:before{content:'';left:0;position:absolute;top:-6px}.toggle span:after{top:6px}.toggle span{display:block;position:relative}.toggle span,.toggle span:after,.toggle span:before{-webkit-backface-visibility:hidden;backface-visibility:hidden;background-color:#D3DAEA;height:2px;-webkit-transition:all .3s;transition:all .3s;width:20px}.open-menu .toggle span{background-color:transparent}.open-menu .toggle span:before{-webkit-transform:rotate(45deg) translate(3px,3px);transform:rotate(45deg) translate(3px,3px)}.open-menu .toggle span:after{-webkit-transform:rotate(-45deg) translate(5px,-6px);transform:rotate(-45deg) translate(5px,-6px)}.caret{display:inline-block;width:0;height:0;margin-left:6px;vertical-align:middle;position:relative;top:-1px;border-top:4px solid;border-right:4px solid transparent;border-left:4px solid transparent}.sidebar{overflow:auto;height:100%;padding-right:15px;padding-bottom:15px;width:285px}.sidebar-wrapper{-webkit-overflow-scrolling:touch;background-color:#2B2F36;left:0;height:100%;overflow-y:hidden;position:fixed;top:0;width:285px;z-index:1}.sidebar-branding{width:160px;padding:0;margin:16px auto}.header{border-bottom:1px solid #E8E8E8;position:relative}.words{line-height:1rem;font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem;font-weight:500;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;color:#A0AABF;letter-spacing:1px;text-transform:uppercase;z-index:5;position:absolute;right:16px;top:0}.words span{color:#000}.btn{text-align:center;display:inline-block;width:100%;text-transform:uppercase;font-weight:600;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;text-shadow:0 1px 0 #1b8b77;padding:16px 24px;background-color:#35D7BB;border-radius:3px;margin:0 auto 16px;line-height:1;color:#fff;-webkit-transition:all .15s linear;transition:all .15s linear;-webkit-font-smoothing:antialiased}.btn--new,.btn--save{display:block;width:238px}.btn--new:hover,.btn--new:focus,.btn--save:hover,.btn--save:focus{color:#fff;border-bottom-color:transparent;box-shadow:0 1px 3px #24b59c;text-shadow:0 1px 0 #24b59c}.btn--save{background-color:#4A5261;text-shadow:0 1px 1px #1e2127}.btn--save:hover,.btn--save:focus{color:#fff;border-bottom-color:transparent;box-shadow:0 1px 5px #08090a;text-shadow:none}.btn--delete{display:block;width:238px;background-color:transparent;font-size:12px;text-shadow:none}.btn--delete:hover,.btn--delete:focus{color:#fff;border-bottom-color:transparent;text-shadow:0 1px 0 #08090a;opacity:.8}.btn--delete-modal,.btn--ok,.btn--close{border-top:0;background-color:#4A5261;text-shadow:0 1px 0 #08090a;margin:0}.btn--delete-modal:hover,.btn--delete-modal:focus,.btn--ok:hover,.btn--ok:focus,.btn--close:hover,.btn--close:focus{color:#fff;background-color:#292d36;text-shadow:none}.btn--delete-modal{display:inline;width:auto}.overlay{position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(55,61,73,.8);-webkit-transition:all .25s ease-in-out;transition:all .25s ease-in-out;-webkit-transition-timing-function:ease-out;transition-timing-function:ease-out;will-change:left,opacity,visibility;z-index:5;opacity:0;visibility:hidden}.show-settings .overlay{visibility:visible;opacity:1}.switch{float:right;line-height:1}.switch input{display:none}.switch small{display:inline-block;cursor:pointer;padding:0 24px 0 0;-webkit-transition:all ease .2s;transition:all ease .2s;background-color:#2B2F36;border-color:#2B2F36}.switch small,.switch small:before{border-radius:30px;box-shadow:inset 0 0 2px 0 #14171F}.switch small:before{display:block;content:'';width:28px;height:28px;background:#fff}.switch.checked small{padding-right:0;padding-left:24px;background-color:#35D7BB;box-shadow:none}.modal--dillinger.about .modal-dialog{font-size:1.25rem;max-width:500px}.modal--dillinger.scope .modal-dialog{max-width:300px;margin:5rem auto}.modal--dillinger .modal-dialog{max-width:600px;width:auto;margin:5rem auto}.modal--dillinger .modal-content{background:#373D49;border-radius:3px;box-shadow:0 2px 5px 0 #2C3B59;color:#fff;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400;padding:2rem}.modal--dillinger ul{list-style-type:disc;margin:1rem 0;padding:0 0 0 1rem}.modal--dillinger li{padding:0;margin:0}.modal--dillinger .modal-header{border:0;padding:0}.modal--dillinger .modal-body{padding:0}.modal--dillinger .modal-footer{border:0;padding:0}.modal--dillinger .close{color:#fff;opacity:1}.modal-backdrop{background-color:#373D49}.pagination--dillinger{padding:0!important;margin:1.5rem 0!important;-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-ms-flex-line-pack:stretch;align-content:stretch}.pagination--dillinger,.pagination--dillinger li{display:-webkit-box;display:-ms-flexbox;display:flex}.pagination--dillinger li{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;text-align:center}.pagination--dillinger li:first-child>a,.pagination--dillinger li.disabled>a,.pagination--dillinger li.disabled>a:hover,.pagination--dillinger li.disabled>a:focus,.pagination--dillinger li>a{background-color:transparent;border-color:#4F535B;border-right-color:transparent}.pagination--dillinger li.active>a,.pagination--dillinger li.active>a:hover,.pagination--dillinger li.active>a:focus{border-color:#4A5261;background-color:#4A5261;color:#fff}.pagination--dillinger li>a{float:none;color:#fff;width:100%;display:block;text-align:center;margin:0;border-right-color:transparent;padding:6px}.pagination--dillinger li>a:hover,.pagination--dillinger li>a:focus{border-color:#35D7BB;background-color:#35D7BB;color:#fff}.pagination--dillinger li:last-child a{border-color:#4F535B}.pagination--dillinger li:first-child a{border-right-color:transparent}.diNotify{position:absolute;z-index:9999;left:0;right:0;top:0;margin:0 auto;max-width:400px;text-align:center;-webkit-transition:top .5s ease-in-out,opacity .5s ease-in-out;transition:top .5s ease-in-out,opacity .5s ease-in-out;visibility:hidden}.diNotify-body{-webkit-font-smoothing:antialiased;background-color:#35D7BB;background:#666E7F;border-radius:3px;color:#fff;font-family:"Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:400;overflow:hidden;padding:1rem 2rem .5rem;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:baseline;-ms-flex-align:baseline;align-items:baseline;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center}.diNotify-icon{display:block;width:16px;height:16px;line-height:16px;position:relative;top:3px}.diNotify-message{padding-left:1rem}.zen-wrapper{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10;background-color:#FFF;opacity:0;-webkit-transition:opacity .25s ease-in-out;transition:opacity .25s ease-in-out}.zen-wrapper.on{opacity:1}.enter-zen-mode{background-image:url("../img/icons/enter-zen.svg");right:.5rem;top:.313rem;display:none}.enter-zen-mode,.close-zen-mode{font:0/0 a;color:transparent;text-shadow:none;background-color:transparent;border:0;background-repeat:no-repeat;width:32px;height:32px;display:block;position:absolute}.close-zen-mode{background-image:url("../img/icons/exit-zen.svg");right:1rem;top:1rem}.zen-page{position:relative;top:0;bottom:0;z-index:11;height:100%;width:100%}#zen{font-size:1.25rem;width:300px;height:80%;margin:0 auto;position:relative;top:10%}#zen:before,#zen:after{content:"";position:absolute;height:10%;width:100%;z-index:12;pointer-events:none}#preview .table{width:auto}.ui-resizable{position:relative}.ui-resizable-handle{position:absolute;font-size:.1px;z-index:99999;display:block}.ui-resizable-e{background-color:#666;border-right:8px solid #e8e8e8;border-left:1px solid #222;width:10px;z-index:88!important;position:relative}.ui-resizable-e:after{content:"-";display:block;position:absolute;top:calc(50% - 16px);left:0;height:25px;width:2px;background-color:rgba(0,0,0,.4);margin:3px}#editor{cursor:ew-resize;position:relative;z-index:auto}.profile-pic{float:left;width:250px}.ad-container a::before{color:#A0AABF;content:"Ad:  "}.ad-container{display:block;float:left;max-width:38%;word-wrap:break-word}.ad-container a{display:block;font-size:.75rem;height:51px;letter-spacing:1px;line-height:1rem;padding:18px 24px}.ad-container img{display:none}.split{overflow:scroll;padding:0!important}.split-editor{padding-left:0;padding-right:0;position:relative;z-index:3}.show-preview .split-editor{display:none}.split-preview{background-color:#fff;display:none;top:0;position:relative;z-index:4}.show-preview .split-preview{display:block}#editor{font-size:1rem;font-family:"Ubuntu Mono",Monaco;font-weight:400;line-height:2rem;width:100%;height:100%}#editor .ace_gutter{-webkit-font-smoothing:antialiased}.editor-header{width:50%;float:left;border-bottom:1px solid #E8E8E8;position:relative}.editor-header--first{border-right:1px solid #E8E8E8}.editor-header .title{display:inline-block}#preview{padding:15px}#preview a{color:#A0AABF;text-decoration:underline}.sr-only{visibility:hidden;text-overflow:110%;overflow:hidden;top:-100px;position:absolute}.mnone{margin:0!important}@media (min-width:768px){.form-inline .form-group{display:inline-block;margin-bottom:0;vertical-align:middle}.form-inline .form-control{display:inline-block;width:auto;vertical-align:middle}.form-inline .input-group{display:inline-table;vertical-align:middle}.form-inline .input-group .input-group-addon,.form-inline .input-group .input-group-btn,.form-inline .input-group .form-control{width:auto}.form-inline .input-group>.form-control{width:100%}.form-inline .control-label{margin-bottom:0;vertical-align:middle}.form-inline .radio,.form-inline .checkbox{display:inline-block;margin-top:0;margin-bottom:0;vertical-align:middle}.form-inline .radio label,.form-inline .checkbox label{padding-left:0}.form-inline .radio input[type="radio"],.form-inline .checkbox input[type="checkbox"]{position:relative;margin-left:0}.form-inline .has-feedback .form-control-feedback{top:0}.form-horizontal .control-label{text-align:right;margin-bottom:0;padding-top:7px}.form-horizontal .form-group-lg .control-label{padding-top:14.3px}.form-horizontal .form-group-sm .control-label{padding-top:6px}.modal-dialog{width:600px;margin:30px auto}.modal-content{box-shadow:0 5px 15px rgba(0,0,0,.5)}.modal-sm{width:300px}}@media (min-width:992px){.modal-lg{width:900px}}@media screen and (max-width:1200px){.ad-container{max-width:30%}.ad-container a{font-size:.825rem;line-height:.875rem;padding:12px 12px 6px 24px;text-align:justify}}@media screen and (max-width:1100px){.ad-container{max-width:27%}.ad-container a{font-size:.8rem;line-height:.85rem;padding:12px 6px 6px 24px;text-align:justify}}@media screen and (max-width:1000px){.ad-container{max-width:24%}.ad-container a{font-size:.775rem;line-height:.8rem;padding:12px 6px 6px 24px;text-align:justify}}@media screen and (max-width:900px){.ad-container{max-width:30%}}@media screen and (max-width:767px){.table-responsive{width:100%;margin-bottom:15px;overflow-y:hidden;overflow-x:auto;-ms-overflow-style:-ms-autohiding-scrollbar;border:1px solid #ddd;-webkit-overflow-scrolling:touch}.table-responsive>.table{margin-bottom:0}.table-responsive>.table>thead>tr>th,.table-responsive>.table>thead>tr>td,.table-responsive>.table>tbody>tr>th,.table-responsive>.table>tbody>tr>td,.table-responsive>.table>tfoot>tr>th,.table-responsive>.table>tfoot>tr>td{white-space:nowrap}.table-responsive>.table-bordered{border:0}.table-responsive>.table-bordered>thead>tr>th:first-child,.table-responsive>.table-bordered>thead>tr>td:first-child,.table-responsive>.table-bordered>tbody>tr>th:first-child,.table-responsive>.table-bordered>tbody>tr>td:first-child,.table-responsive>.table-bordered>tfoot>tr>th:first-child,.table-responsive>.table-bordered>tfoot>tr>td:first-child{border-left:0}.table-responsive>.table-bordered>thead>tr>th:last-child,.table-responsive>.table-bordered>thead>tr>td:last-child,.table-responsive>.table-bordered>tbody>tr>th:last-child,.table-responsive>.table-bordered>tbody>tr>td:last-child,.table-responsive>.table-bordered>tfoot>tr>th:last-child,.table-responsive>.table-bordered>tfoot>tr>td:last-child{border-right:0}.table-responsive>.table-bordered>tbody>tr:last-child>th,.table-responsive>.table-bordered>tbody>tr:last-child>td,.table-responsive>.table-bordered>tfoot>tr:last-child>th,.table-responsive>.table-bordered>tfoot>tr:last-child>td{border-bottom:0}}@media screen and (max-width:720px){.ad-container{max-width:50%}.ad-container a{font-size:.75rem;line-height:1rem;padding:12px 24px}}@media screen and (max-width:620px){.ad-container{max-width:40%}.ad-container a{font-size:.66rem;letter-spacing:1px;line-height:1rem;padding:6px 24px}}@media screen and (max-width:520px){.ad-container a{font-size:.4rem;line-height:.875rem;padding:6px 12px 6px 24px;text-align:justify}}@media screen and (max-width:460px){.ad-container{display:none}}@media screen and (min-width:27.5em){html{font-size:.875em}body{font-size:1rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}p{padding-top:.66001rem}p,pre{margin-bottom:1.33999rem}pre,blockquote p{font-size:1rem;padding-top:.66001rem}blockquote p{margin-bottom:.33999rem}h1{font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}.g{margin-left:-16px;margin-right:-16px}.g-b{padding-left:16px;padding-right:16px}.g-b--m1of1{width:100%}.g-b--m1of2,.g-b--m2of4,.g-b--m3of6,.g-b--m4of8,.g-b--m5of10,.g-b--m6of12{width:50%}.g-b--m1of3,.g-b--m2of6,.g-b--m4of12{width:33.333%}.g-b--m2of3,.g-b--m4of6,.g-b--m8of12{width:66.666%}.g-b--m1of4,.g-b--m2of8,.g-b--m3of12{width:25%}.g-b--m3of4,.g-b--m6of8,.g-b--m9of12{width:75%}.g-b--m1of5,.g-b--m2of10{width:20%}.g-b--m2of5,.g-b--m4of10{width:40%}.g-b--m3of5,.g-b--m6of10{width:60%}.g-b--m4of5,.g-b--m8of10{width:80%}.g-b--m1of6,.g-b--m2of12{width:16.666%}.g-b--m5of6,.g-b--m10of12{width:83.333%}.g-b--m1of8{width:12.5%}.g-b--m3of8{width:37.5%}.g-b--m5of8{width:62.5%}.g-b--m7of8{width:87.5%}.g-b--m1of10{width:10%}.g-b--m3of10{width:30%}.g-b--m7of10{width:70%}.g-b--m9of10{width:90%}.g-b--m1of12{width:8.333%}.g-b--m5of12{width:41.666%}.g-b--m7of12{width:58.333%}.g-b--m11of12{width:91.666%}.g-b--push--m1of1{margin-left:100%}.g-b--push--m1of2,.g-b--push--m2of4,.g-b--push--m3of6,.g-b--push--m4of8,.g-b--push--m5of10,.g-b--push--m6of12{margin-left:50%}.g-b--push--m1of3,.g-b--push--m2of6,.g-b--push--m4of12{margin-left:33.333%}.g-b--push--m2of3,.g-b--push--m4of6,.g-b--push--m8of12{margin-left:66.666%}.g-b--push--m1of4,.g-b--push--m2of8,.g-b--push--m3of12{margin-left:25%}.g-b--push--m3of4,.g-b--push--m6of8,.g-b--push--m9of12{margin-left:75%}.g-b--push--m1of5,.g-b--push--m2of10{margin-left:20%}.g-b--push--m2of5,.g-b--push--m4of10{margin-left:40%}.g-b--push--m3of5,.g-b--push--m6of10{margin-left:60%}.g-b--push--m4of5,.g-b--push--m8of10{margin-left:80%}.g-b--push--m1of6,.g-b--push--m2of12{margin-left:16.666%}.g-b--push--m5of6,.g-b--push--m10of12{margin-left:83.333%}.g-b--push--m1of8{margin-left:12.5%}.g-b--push--m3of8{margin-left:37.5%}.g-b--push--m5of8{margin-left:62.5%}.g-b--push--m7of8{margin-left:87.5%}.g-b--push--m1of10{margin-left:10%}.g-b--push--m3of10{margin-left:30%}.g-b--push--m7of10{margin-left:70%}.g-b--push--m9of10{margin-left:90%}.g-b--push--m1of12{margin-left:8.333%}.g-b--push--m5of12{margin-left:41.666%}.g-b--push--m7of12{margin-left:58.333%}.g-b--push--m11of12{margin-left:91.666%}.g-b--pull--m1of1{margin-right:100%}.g-b--pull--m1of2,.g-b--pull--m2of4,.g-b--pull--m3of6,.g-b--pull--m4of8,.g-b--pull--m5of10,.g-b--pull--m6of12{margin-right:50%}.g-b--pull--m1of3,.g-b--pull--m2of6,.g-b--pull--m4of12{margin-right:33.333%}.g-b--pull--m2of3,.g-b--pull--m4of6,.g-b--pull--m8of12{margin-right:66.666%}.g-b--pull--m1of4,.g-b--pull--m2of8,.g-b--pull--m3of12{margin-right:25%}.g-b--pull--m3of4,.g-b--pull--m6of8,.g-b--pull--m9of12{margin-right:75%}.g-b--pull--m1of5,.g-b--pull--m2of10{margin-right:20%}.g-b--pull--m2of5,.g-b--pull--m4of10{margin-right:40%}.g-b--pull--m3of5,.g-b--pull--m6of10{margin-right:60%}.g-b--pull--m4of5,.g-b--pull--m8of10{margin-right:80%}.g-b--pull--m1of6,.g-b--pull--m2of12{margin-right:16.666%}.g-b--pull--m5of6,.g-b--pull--m10of12{margin-right:83.333%}.g-b--pull--m1of8{margin-right:12.5%}.g-b--pull--m3of8{margin-right:37.5%}.g-b--pull--m5of8{margin-right:62.5%}.g-b--pull--m7of8{margin-right:87.5%}.g-b--pull--m1of10{margin-right:10%}.g-b--pull--m3of10{margin-right:30%}.g-b--pull--m7of10{margin-right:70%}.g-b--pull--m9of10{margin-right:90%}.g-b--pull--m1of12{margin-right:8.333%}.g-b--pull--m5of12{margin-right:41.666%}.g-b--pull--m7of12{margin-right:58.333%}.g-b--pull--m11of12{margin-right:91.666%}.splashscreen p{font-size:1.25rem;margin-bottom:1.43749rem;padding-top:.56251rem}.title{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.title-document{margin-bottom:.89999rem;padding-top:.10001rem}.title-document,.settings a{font-size:1.25rem}.words{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.modal--dillinger.about .modal-dialog,#zen{font-size:1.25rem}#zen{width:400px}#editor{font-size:1rem}}@media screen and (min-width:46.25em){html{font-size:.875em}body{font-size:1rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}p{padding-top:.66001rem}p,pre{margin-bottom:1.33999rem}pre,blockquote p{font-size:1rem;padding-top:.66001rem}blockquote p{margin-bottom:.33999rem}h1{font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}.g{margin-left:-16px;margin-right:-16px}.g-b{padding-left:16px;padding-right:16px}.g-b--t1of1{width:100%}.g-b--t1of2,.g-b--t2of4,.g-b--t3of6,.g-b--t4of8,.g-b--t5of10,.g-b--t6of12{width:50%}.g-b--t1of3,.g-b--t2of6,.g-b--t4of12{width:33.333%}.g-b--t2of3,.g-b--t4of6,.g-b--t8of12{width:66.666%}.g-b--t1of4,.g-b--t2of8,.g-b--t3of12{width:25%}.g-b--t3of4,.g-b--t6of8,.g-b--t9of12{width:75%}.g-b--t1of5,.g-b--t2of10{width:20%}.g-b--t2of5,.g-b--t4of10{width:40%}.g-b--t3of5,.g-b--t6of10{width:60%}.g-b--t4of5,.g-b--t8of10{width:80%}.g-b--t1of6,.g-b--t2of12{width:16.666%}.g-b--t5of6,.g-b--t10of12{width:83.333%}.g-b--t1of8{width:12.5%}.g-b--t3of8{width:37.5%}.g-b--t5of8{width:62.5%}.g-b--t7of8{width:87.5%}.g-b--t1of10{width:10%}.g-b--t3of10{width:30%}.g-b--t7of10{width:70%}.g-b--t9of10{width:90%}.g-b--t1of12{width:8.333%}.g-b--t5of12{width:41.666%}.g-b--t7of12{width:58.333%}.g-b--t11of12{width:91.666%}.g-b--push--t1of1{margin-left:100%}.g-b--push--t1of2,.g-b--push--t2of4,.g-b--push--t3of6,.g-b--push--t4of8,.g-b--push--t5of10,.g-b--push--t6of12{margin-left:50%}.g-b--push--t1of3,.g-b--push--t2of6,.g-b--push--t4of12{margin-left:33.333%}.g-b--push--t2of3,.g-b--push--t4of6,.g-b--push--t8of12{margin-left:66.666%}.g-b--push--t1of4,.g-b--push--t2of8,.g-b--push--t3of12{margin-left:25%}.g-b--push--t3of4,.g-b--push--t6of8,.g-b--push--t9of12{margin-left:75%}.g-b--push--t1of5,.g-b--push--t2of10{margin-left:20%}.g-b--push--t2of5,.g-b--push--t4of10{margin-left:40%}.g-b--push--t3of5,.g-b--push--t6of10{margin-left:60%}.g-b--push--t4of5,.g-b--push--t8of10{margin-left:80%}.g-b--push--t1of6,.g-b--push--t2of12{margin-left:16.666%}.g-b--push--t5of6,.g-b--push--t10of12{margin-left:83.333%}.g-b--push--t1of8{margin-left:12.5%}.g-b--push--t3of8{margin-left:37.5%}.g-b--push--t5of8{margin-left:62.5%}.g-b--push--t7of8{margin-left:87.5%}.g-b--push--t1of10{margin-left:10%}.g-b--push--t3of10{margin-left:30%}.g-b--push--t7of10{margin-left:70%}.g-b--push--t9of10{margin-left:90%}.g-b--push--t1of12{margin-left:8.333%}.g-b--push--t5of12{margin-left:41.666%}.g-b--push--t7of12{margin-left:58.333%}.g-b--push--t11of12{margin-left:91.666%}.g-b--pull--t1of1{margin-right:100%}.g-b--pull--t1of2,.g-b--pull--t2of4,.g-b--pull--t3of6,.g-b--pull--t4of8,.g-b--pull--t5of10,.g-b--pull--t6of12{margin-right:50%}.g-b--pull--t1of3,.g-b--pull--t2of6,.g-b--pull--t4of12{margin-right:33.333%}.g-b--pull--t2of3,.g-b--pull--t4of6,.g-b--pull--t8of12{margin-right:66.666%}.g-b--pull--t1of4,.g-b--pull--t2of8,.g-b--pull--t3of12{margin-right:25%}.g-b--pull--t3of4,.g-b--pull--t6of8,.g-b--pull--t9of12{margin-right:75%}.g-b--pull--t1of5,.g-b--pull--t2of10{margin-right:20%}.g-b--pull--t2of5,.g-b--pull--t4of10{margin-right:40%}.g-b--pull--t3of5,.g-b--pull--t6of10{margin-right:60%}.g-b--pull--t4of5,.g-b--pull--t8of10{margin-right:80%}.g-b--pull--t1of6,.g-b--pull--t2of12{margin-right:16.666%}.g-b--pull--t5of6,.g-b--pull--t10of12{margin-right:83.333%}.g-b--pull--t1of8{margin-right:12.5%}.g-b--pull--t3of8{margin-right:37.5%}.g-b--pull--t5of8{margin-right:62.5%}.g-b--pull--t7of8{margin-right:87.5%}.g-b--pull--t1of10{margin-right:10%}.g-b--pull--t3of10{margin-right:30%}.g-b--pull--t7of10{margin-right:70%}.g-b--pull--t9of10{margin-right:90%}.g-b--pull--t1of12{margin-right:8.333%}.g-b--pull--t5of12{margin-right:41.666%}.g-b--pull--t7of12{margin-right:58.333%}.g-b--pull--t11of12{margin-right:91.666%}.splashscreen-dillinger{width:500px}.splashscreen p{font-size:1.25rem;margin-bottom:1.43749rem;padding-top:.56251rem}.title{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.title-document{font-size:1.25rem;margin-bottom:.89999rem;padding-top:.10001rem}.menu .menu-item--save-to,.menu .menu-item--import-from{display:block}.menu .menu-item--preview,.menu .menu-item--save-to.in-sidebar,.menu .menu-item--import-from.in-sidebar{display:none}.settings a{font-size:1.25rem}.words{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.modal--dillinger.about .modal-dialog{font-size:1.25rem}.enter-zen-mode{display:block}.close-zen-mode{right:3rem;top:3rem}#zen{font-size:1.25rem;width:500px}.split-editor{border-right:1px solid #E8E8E8;float:left;height:calc(100vh - 172px);-webkit-overflow-scrolling:touch;padding-right:16px;width:50%}.show-preview .split-editor{display:block}.split-preview{display:block;float:right;height:calc(100vh - 172px);-webkit-overflow-scrolling:touch;position:relative;top:0;width:50%}#editor{font-size:1rem}}@media screen and (min-width:62.5em){html{font-size:.875em}body{font-size:1rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}p{padding-top:.66001rem}p,pre{margin-bottom:1.33999rem}pre,blockquote p{font-size:1rem;padding-top:.66001rem}blockquote p{margin-bottom:.33999rem}h1{font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}.g{margin-left:-16px;margin-right:-16px}.g-b{padding-left:16px;padding-right:16px}.g-b--d1of1{width:100%}.g-b--d1of2,.g-b--d2of4,.g-b--d3of6,.g-b--d4of8,.g-b--d5of10,.g-b--d6of12{width:50%}.g-b--d1of3,.g-b--d2of6,.g-b--d4of12{width:33.333%}.g-b--d2of3,.g-b--d4of6,.g-b--d8of12{width:66.666%}.g-b--d1of4,.g-b--d2of8,.g-b--d3of12{width:25%}.g-b--d3of4,.g-b--d6of8,.g-b--d9of12{width:75%}.g-b--d1of5,.g-b--d2of10{width:20%}.g-b--d2of5,.g-b--d4of10{width:40%}.g-b--d3of5,.g-b--d6of10{width:60%}.g-b--d4of5,.g-b--d8of10{width:80%}.g-b--d1of6,.g-b--d2of12{width:16.666%}.g-b--d5of6,.g-b--d10of12{width:83.333%}.g-b--d1of8{width:12.5%}.g-b--d3of8{width:37.5%}.g-b--d5of8{width:62.5%}.g-b--d7of8{width:87.5%}.g-b--d1of10{width:10%}.g-b--d3of10{width:30%}.g-b--d7of10{width:70%}.g-b--d9of10{width:90%}.g-b--d1of12{width:8.333%}.g-b--d5of12{width:41.666%}.g-b--d7of12{width:58.333%}.g-b--d11of12{width:91.666%}.g-b--push--d1of1{margin-left:100%}.g-b--push--d1of2,.g-b--push--d2of4,.g-b--push--d3of6,.g-b--push--d4of8,.g-b--push--d5of10,.g-b--push--d6of12{margin-left:50%}.g-b--push--d1of3,.g-b--push--d2of6,.g-b--push--d4of12{margin-left:33.333%}.g-b--push--d2of3,.g-b--push--d4of6,.g-b--push--d8of12{margin-left:66.666%}.g-b--push--d1of4,.g-b--push--d2of8,.g-b--push--d3of12{margin-left:25%}.g-b--push--d3of4,.g-b--push--d6of8,.g-b--push--d9of12{margin-left:75%}.g-b--push--d1of5,.g-b--push--d2of10{margin-left:20%}.g-b--push--d2of5,.g-b--push--d4of10{margin-left:40%}.g-b--push--d3of5,.g-b--push--d6of10{margin-left:60%}.g-b--push--d4of5,.g-b--push--d8of10{margin-left:80%}.g-b--push--d1of6,.g-b--push--d2of12{margin-left:16.666%}.g-b--push--d5of6,.g-b--push--d10of12{margin-left:83.333%}.g-b--push--d1of8{margin-left:12.5%}.g-b--push--d3of8{margin-left:37.5%}.g-b--push--d5of8{margin-left:62.5%}.g-b--push--d7of8{margin-left:87.5%}.g-b--push--d1of10{margin-left:10%}.g-b--push--d3of10{margin-left:30%}.g-b--push--d7of10{margin-left:70%}.g-b--push--d9of10{margin-left:90%}.g-b--push--d1of12{margin-left:8.333%}.g-b--push--d5of12{margin-left:41.666%}.g-b--push--d7of12{margin-left:58.333%}.g-b--push--d11of12{margin-left:91.666%}.g-b--pull--d1of1{margin-right:100%}.g-b--pull--d1of2,.g-b--pull--d2of4,.g-b--pull--d3of6,.g-b--pull--d4of8,.g-b--pull--d5of10,.g-b--pull--d6of12{margin-right:50%}.g-b--pull--d1of3,.g-b--pull--d2of6,.g-b--pull--d4of12{margin-right:33.333%}.g-b--pull--d2of3,.g-b--pull--d4of6,.g-b--pull--d8of12{margin-right:66.666%}.g-b--pull--d1of4,.g-b--pull--d2of8,.g-b--pull--d3of12{margin-right:25%}.g-b--pull--d3of4,.g-b--pull--d6of8,.g-b--pull--d9of12{margin-right:75%}.g-b--pull--d1of5,.g-b--pull--d2of10{margin-right:20%}.g-b--pull--d2of5,.g-b--pull--d4of10{margin-right:40%}.g-b--pull--d3of5,.g-b--pull--d6of10{margin-right:60%}.g-b--pull--d4of5,.g-b--pull--d8of10{margin-right:80%}.g-b--pull--d1of6,.g-b--pull--d2of12{margin-right:16.666%}.g-b--pull--d5of6,.g-b--pull--d10of12{margin-right:83.333%}.g-b--pull--d1of8{margin-right:12.5%}.g-b--pull--d3of8{margin-right:37.5%}.g-b--pull--d5of8{margin-right:62.5%}.g-b--pull--d7of8{margin-right:87.5%}.g-b--pull--d1of10{margin-right:10%}.g-b--pull--d3of10{margin-right:30%}.g-b--pull--d7of10{margin-right:70%}.g-b--pull--d9of10{margin-right:90%}.g-b--pull--d1of12{margin-right:8.333%}.g-b--pull--d5of12{margin-right:41.666%}.g-b--pull--d7of12{margin-right:58.333%}.g-b--pull--d11of12{margin-right:91.666%}.splashscreen-dillinger{width:700px}.splashscreen p{font-size:1.25rem;margin-bottom:1.43749rem;padding-top:.56251rem}.title{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.title-document{font-size:1.25rem;margin-bottom:.89999rem;padding-top:.10001rem}.menu .menu-item--export-as{display:block}.menu .menu-item--preview{display:none}.settings a{font-size:1.25rem}.words{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.modal--dillinger.about .modal-dialog,#zen{font-size:1.25rem}#zen{width:700px}#editor{font-size:1rem}}@media screen and (min-width:87.5em){html{font-size:.875em}body{font-size:1rem}ul,ol{margin-bottom:.83999rem;padding-top:.16001rem}p{padding-top:.66001rem}p,pre{margin-bottom:1.33999rem}pre,blockquote p{font-size:1rem;padding-top:.66001rem}blockquote p{margin-bottom:.33999rem}h1{font-size:2.0571429rem;margin-bottom:.21999rem;padding-top:.78001rem}h2{font-size:1.953125rem;margin-bottom:.1835837rem;padding-top:.8164163rem}h3{font-size:1.6457143rem;margin-bottom:.07599rem;padding-top:.92401rem}h4{font-size:1.5625rem;margin-bottom:.546865rem;padding-top:.453135rem}h5{font-size:1.25rem;margin-bottom:-.56251rem;padding-top:.56251rem}h6{font-size:1rem;margin-bottom:-.65001rem;padding-top:.65001rem}.splashscreen-dillinger{width:800px}.splashscreen p{font-size:1.25rem;margin-bottom:1.43749rem;padding-top:.56251rem}.title{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.title-document{margin-bottom:.89999rem;padding-top:.10001rem}.title-document,.settings a{font-size:1.25rem}.words{font-size:.8rem;margin-bottom:.77999rem;padding-top:.22001rem}.modal--dillinger.about .modal-dialog,#zen{font-size:1.25rem}#editor{font-size:1rem}}@media screen and (max-width:46.1875em){.editor-header{display:none}.editor-header--first{display:block;width:100%}}</style></head><body id="preview">
+<h1><a id="Git__Under_the_Hood_0"></a>Git - Under the Hood</h1>
+<p>This tutorial covers a few interesting git topics. We’ll talk about:</p>
+<ul>
+<li>.git Folder Contents</li>
+<li>Git Objects</li>
+<li>Working with Tags</li>
+<li>Rewriting History</li>
+<li>Finding Commits</li>
+<li>Git Hooks</li>
+<li>Objects and Pack Files</li>
+</ul>
+<h2><a id="Ok_Lets_Get_Started_10"></a>Ok Let’s Get Started</h2>
+<p>I’m assuming that you have <strong>git</strong> and <strong>ruby</strong> installed, and that you have some familiarity with the basics of adding files to git and making commits. I also use the <strong>tree</strong> utility during this tutorial, so you’ll need to have that installed or just use <strong>ls</strong> to inspect directories instead.</p>
+<h2><a id="git_Folder_Contents_13"></a>.git Folder Contents</h2>
+<p>Let’s start by creating an empty repository:</p>
+<pre><code class="language-bash">$ mkdir temp-repo &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo &amp;&amp; git init
+</code></pre>
+<p>Let’s see what we get for our efforts:</p>
+<pre><code class="language-bash">$ ls <span class="hljs-operator">-l</span> .git
+total <span class="hljs-number">24</span>
+-rw-r--r--   <span class="hljs-number">1</span> jessehill  staff   <span class="hljs-number">23</span> Aug <span class="hljs-number">18</span> <span class="hljs-number">11</span>:<span class="hljs-number">29</span> HEAD
+-rw-r--r--   <span class="hljs-number">1</span> jessehill  staff  <span class="hljs-number">137</span> Aug <span class="hljs-number">18</span> <span class="hljs-number">11</span>:<span class="hljs-number">29</span> config
+-rw-r--r--   <span class="hljs-number">1</span> jessehill  staff   <span class="hljs-number">73</span> Aug <span class="hljs-number">18</span> <span class="hljs-number">11</span>:<span class="hljs-number">29</span> description
+drwxr-xr-x  <span class="hljs-number">11</span> jessehill  staff  <span class="hljs-number">374</span> Aug <span class="hljs-number">18</span> <span class="hljs-number">11</span>:<span class="hljs-number">29</span> hooks/
+drwxr-xr-x   <span class="hljs-number">3</span> jessehill  staff  <span class="hljs-number">102</span> Aug <span class="hljs-number">18</span> <span class="hljs-number">11</span>:<span class="hljs-number">29</span> info/
+drwxr-xr-x   <span class="hljs-number">4</span> jessehill  staff  <span class="hljs-number">136</span> Aug <span class="hljs-number">18</span> <span class="hljs-number">11</span>:<span class="hljs-number">29</span> objects/
+drwxr-xr-x   <span class="hljs-number">4</span> jessehill  staff  <span class="hljs-number">136</span> Aug <span class="hljs-number">18</span> <span class="hljs-number">11</span>:<span class="hljs-number">29</span> refs/
+</code></pre>
+<p>What’s in that <strong>HEAD</strong> file?</p>
+<pre><code class="language-bash">$ cat .git/HEAD
+ref: refs/heads/master
+</code></pre>
+<p>Our HEAD file is just a text file that lists a git ref that the HEAD should point to. The HEAD ref defaults to master. That seems reasonable. What if we look at our repository’s history?</p>
+<pre><code class="language-bash">$ git <span class="hljs-built_in">log</span>
+fatal: bad default revision <span class="hljs-string">'HEAD'</span>
+</code></pre>
+<p>We get this error of course because we have no commits and so <em>refs/head/master</em> doesn’t exist yet. Taking a look at our refs directory confirms this.</p>
+<pre><code class="language-bash">$ tree .git/refs/
+.git/refs/
+├── heads
+└── tags
+
+<span class="hljs-number">2</span> directories, <span class="hljs-number">0</span> files
+</code></pre>
+<p>Ok, what branch are we on?</p>
+<pre><code class="language-bash">$ git branch
+(No output)
+</code></pre>
+<p>So, we don’t have a branch yet either. When we make our first commit, we’ll automagically get a master ref.</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Hi"</span> &gt;&gt; hello.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Hello"</span>
+[master (root-commit) f31e784] Hello
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
+ create mode <span class="hljs-number">100644</span> hello.txt
+$ ls .git/refs/heads
+master
+</code></pre>
+<p>Ok, so there it is - we have a <strong>master</strong> now.</p>
+<p>What if we create a new branch and then check again?</p>
+<pre><code class="language-bash">$ git checkout -b develop
+Switched to a new branch <span class="hljs-string">'develop'</span>
+~/Documents/git/temp-repo:
+$ tree .git/refs/
+.git/refs/
+├── heads
+│   ├── develop
+│   └── master
+└── tags
+
+<span class="hljs-number">2</span> directories, <span class="hljs-number">2</span> files
+</code></pre>
+<p>So we have some idea now where git stores information about our branches. Let’s take a look at what’s in the master ref file.</p>
+<pre><code class="language-bash">$ cat .git/refs/heads/master
+f31e784077dd3cdf6ba0c8b0cb6a63c7f568a012
+</code></pre>
+<p>So again, this is just a text file. It lists the hash of the commit that the <strong>master</strong> ref points to.</p>
+<p>Let’s take a look in the config file.</p>
+<pre><code class="language-bash">$ cat .git/config
+[core]
+    repositoryformatversion = <span class="hljs-number">0</span>
+    filemode = <span class="hljs-literal">true</span>
+    bare = <span class="hljs-literal">false</span>
+    logallrefupdates = <span class="hljs-literal">true</span>
+    ignorecase = <span class="hljs-literal">true</span>
+    precomposeunicode = <span class="hljs-literal">true</span>
+</code></pre>
+<p>There isn’t much in the config file by default. It’s perhaps important to note that this file is not versioned and shared. If we create an alias:</p>
+<pre><code class="language-bash">$ git config alias.co checkout
+$ cat .git/config
+[core]
+    repositoryformatversion = <span class="hljs-number">0</span>
+    filemode = <span class="hljs-literal">true</span>
+    bare = <span class="hljs-literal">false</span>
+    logallrefupdates = <span class="hljs-literal">true</span>
+    ignorecase = <span class="hljs-literal">true</span>
+    precomposeunicode = <span class="hljs-literal">true</span>
+[<span class="hljs-built_in">alias</span>]
+    co = checkout
+</code></pre>
+<p>We see that we have an entry added to the config file, but if we clone the repo:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .. &amp;&amp; git <span class="hljs-built_in">clone</span> temp-repo temp-repo-<span class="hljs-number">2</span> &amp;&amp; cat temp-repo-<span class="hljs-number">2</span>/.git/config
+Cloning into <span class="hljs-string">'temp-repo-2'</span>...
+done.
+[core]
+    repositoryformatversion = <span class="hljs-number">0</span>
+    filemode = <span class="hljs-literal">true</span>
+    bare = <span class="hljs-literal">false</span>
+    logallrefupdates = <span class="hljs-literal">true</span>
+    ignorecase = <span class="hljs-literal">true</span>
+    precomposeunicode = <span class="hljs-literal">true</span>
+[remote <span class="hljs-string">"origin"</span>]
+    url = /Users/jessehill/Documents/git/temp-repo
+    fetch = +refs/heads/*:refs/remotes/origin/*
+[branch <span class="hljs-string">"develop"</span>]
+    remote = origin
+    merge = refs/heads/develop
+</code></pre>
+<p>We can see that we don’t have the alias in the cloned repository. The config contents are local to the copy of the repository.</p>
+<p>Let’s clean up and go back to our original repository:</p>
+<pre><code class="language-bash">$ rm -rf temp-repo-<span class="hljs-number">2</span> &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo
+</code></pre>
+<p>Ok, what’s in that hooks directory?</p>
+<pre><code class="language-bash">$ ls .git/hooks
+applypatch-msg.sample      pre-applypatch.sample      pre-rebase.sample
+commit-msg.sample          pre-commit.sample          prepare-commit-msg.sample
+post-update.sample         pre-push.sample            update.sample
+</code></pre>
+<p>Interesting. These look like scripts that we could enable in order to hook into git’s lifecycle. We’ll take a closer look at these files later.</p>
+<p>There’s an info/exclude file:</p>
+<pre><code class="language-bash">$ cat .git/info/exclude
+<span class="hljs-comment"># git ls-files --others --exclude-from=.git/info/exclude</span>
+<span class="hljs-comment"># Lines that start with '#' are comments.</span>
+<span class="hljs-comment"># For a project mostly in C, the following would be a good set of</span>
+<span class="hljs-comment"># exclude patterns (uncomment them if you want to use them):</span>
+<span class="hljs-comment"># *.[oa]</span>
+<span class="hljs-comment"># *~</span>
+</code></pre>
+<p>What’s that thing for? Why not just use .gitignore? Well, you’ll mostly use .gitignore, since it’s versioned and shared and can be specified in each directory as needed. The .git/info/exclude file should be used for personal exclusions (say, IDE config) that won’t be shared as part of the repository when it is cloned.</p>
+<h2><a id="Git_Objects_161"></a>Git Objects</h2>
+<h3><a id="Blobs_162"></a>Blobs</h3>
+<p>Let’s start with a clean repository again and add a file:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .. &amp;&amp; rm -rf temp-repo &amp;&amp; mkdir temp-repo &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo &amp;&amp; git init
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"It's fun to write Clojure code."</span> &gt;&gt; comments.txt
+</code></pre>
+<p>Do we have any objects yet?</p>
+<pre><code class="language-bash">$ find .git/objects -type f | wc <span class="hljs-operator">-l</span>
+       <span class="hljs-number">0</span>
+</code></pre>
+<p>Ok, no, not yet. Let’s stage the file:</p>
+<pre><code class="language-bash">$ git add comments.txt
+</code></pre>
+<p>How about now?</p>
+<pre><code class="language-bash">$ find .git/objects -type f | wc <span class="hljs-operator">-l</span>
+       <span class="hljs-number">1</span>
+</code></pre>
+<p>Ok, cool! We have an object! What should we expect the hash of that object should be?</p>
+<pre><code class="language-bash">$ git <span class="hljs-built_in">hash</span>-object comments.txt
+d65a67c2695f0252b4dd846ca20a60ee9dc1f981
+</code></pre>
+<p>Git computes a SHA1 hash from the file content and uses this hash to determine the file path for the object. Let’s see if we can find it in the objects directory:</p>
+<pre><code class="language-bash">$ tree .git/objects/
+.git/objects/
+├── d6
+│   └── <span class="hljs-number">5</span>a67c2695f0252b4dd846ca20a60ee9dc1f981
+├── info
+└── pack
+
+<span class="hljs-number">3</span> directories, <span class="hljs-number">1</span> file
+</code></pre>
+<p>Yep, that matches our hash. Note the first two character of the hash are used for the directory name and the rest form the file name.</p>
+<p>Let’s see if we can take a look at what is in that object.</p>
+<pre><code class="language-bash">$ git cat-file -p d65a
+It<span class="hljs-string">'s fun to write Clojure code.
+</span></code></pre>
+<p>That looks like what we expected. What’s the type of that thing?</p>
+<pre><code class="language-bash">$ git cat-file -t d65a
+blob
+</code></pre>
+<p>It’s a blob. How exciting!</p>
+<blockquote>
+<p>A blob is a Binary Large Object. They’re used to store larger objects that have an unknown format - typically for images, audio, or executables in a database. In git they’re used to store the content of all files in the working directory.</p>
+</blockquote>
+<p>Let’s look at the format of the file itself. Create a ruby script that looks like this:</p>
+<pre><code class="language-ruby"><span class="hljs-comment">#!/usr/bin/ruby</span>
+<span class="hljs-keyword">require</span> <span class="hljs-string">'zlib'</span>
+filename = <span class="hljs-constant">ARGV</span>[<span class="hljs-number">0</span>]
+content = <span class="hljs-constant">File</span>.open(filename, <span class="hljs-string">'rb'</span>) { |f| f.read }
+unzipped = <span class="hljs-constant">Zlib::Inflate</span>.inflate(content)
+puts unzipped
+</code></pre>
+<p>The script inflates a file’s contents and prints them to the console. I’ve named my script <strong>decode-commit.rb</strong>.</p>
+<p>Let’s run it on our object file:</p>
+<pre><code class="language-bash">$ ruby decode-commit.rb .git/objects/d6/<span class="hljs-number">5</span>a67c2695f0252b4dd846ca20a60ee9dc1f981
+blob <span class="hljs-number">32</span>It<span class="hljs-string">'s fun to write Clojure code.
+</span></code></pre>
+<p>So that’s the blob object format. A header of the object type and object length are prepended to the content, and then the whole thing is compressed with zlib and written to the directory and file name that correspond to the SHA1 hash of the file content.</p>
+<h3><a id="Tree_and_Commit_Objects_235"></a>Tree and Commit Objects</h3>
+<p>Let’s write our index (staging area) out to a git object.</p>
+<pre><code class="language-bash">$ git write-tree
+<span class="hljs-number">56</span>cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
+$ tree .git/objects/
+.git/objects/
+├── <span class="hljs-number">56</span>
+│   └── cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
+├── d6
+│   └── <span class="hljs-number">5</span>a67c2695f0252b4dd846ca20a60ee9dc1f981
+├── info
+└── pack
+
+<span class="hljs-number">4</span> directories, <span class="hljs-number">2</span> files
+</code></pre>
+<p>So we’re up to two objects. If we take a look at our new one (56cb) we can see what a <strong>tree</strong> looks like:</p>
+<pre><code class="language-bash">$ git cat-file -t <span class="hljs-number">56</span>cb
+tree
+$ git cat-file -p <span class="hljs-number">56</span>cb
+<span class="hljs-number">100644</span> blob d65a67c2695f0252b4dd846ca20a60ee9dc1f981    comments.txt
+</code></pre>
+<p>The tree will contain a row for each object in the tree’s directory. The first column shows object type and file permissions. The second column lists the object type (blob or tree). The third column lists the hash for the object content. The final column states the name to use for the object when it’s written to the working directory.</p>
+<p>Let’s commit our changes:</p>
+<pre><code class="language-bash">$ git commit -m <span class="hljs-string">"Adds comments file"</span>
+[master (root-commit) a814d2d] Adds comments file
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
+ create mode <span class="hljs-number">100644</span> comments.txt
+</code></pre>
+<blockquote>
+<p>Note that your commit will not have the a814d2d hash. You can probably guess why that is - the hash is based on the content of the file and the file includes timestamps, which will differ on your machine. So it makes sense that your hash will vary.</p>
+</blockquote>
+<p>Now how many objects do we have now?</p>
+<pre><code class="language-bash">$ tree .git/objects/
+.git/objects/
+├── <span class="hljs-number">56</span>
+│   └── cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
+├── a8
+│   └── <span class="hljs-number">14</span>d2d48078dffe11d661456c1062ad9e6bad96
+├── d6
+│   └── <span class="hljs-number">5</span>a67c2695f0252b4dd846ca20a60ee9dc1f981
+├── info
+└── pack
+
+<span class="hljs-number">5</span> directories, <span class="hljs-number">3</span> files
+</code></pre>
+<p>We’re starting to get a lot of objects to look through. In order to help out, let’s write a quick <em>cat-objects.rb</em> script - open a file and paste in this content:</p>
+<pre><code class="language-ruby"><span class="hljs-comment">#!/usr/bin/ruby</span>
+<span class="hljs-keyword">require</span> <span class="hljs-string">'find'</span>
+
+<span class="hljs-constant">Find</span>.find(<span class="hljs-string">".git/objects"</span>) <span class="hljs-keyword">do</span> |path|
+  <span class="hljs-keyword">if</span> <span class="hljs-constant">FileTest</span>.file?(path)
+    dirname = <span class="hljs-constant">File</span>.dirname(path)
+    hash_prefix = <span class="hljs-constant">File</span>.basename(dirname)
+    hash = hash_prefix + <span class="hljs-constant">File</span>.basename(path)
+    puts <span class="hljs-string">"Hash: "</span> + hash
+    puts <span class="hljs-string">"Type: "</span> + <span class="hljs-string">`git cat-file -t <span class="hljs-subst">#{hash}</span>`</span>
+    puts <span class="hljs-string">`git cat-file -p <span class="hljs-subst">#{hash}</span>`</span>
+    puts
+  <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+<p>Now we can run the script to <em>cat</em> out our objects:</p>
+<pre><code class="language-bash">$ ruby cat-objects.rb
+Hash: <span class="hljs-number">56</span>cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
+Type: tree
+<span class="hljs-number">100644</span> blob d65a67c2695f0252b4dd846ca20a60ee9dc1f981    comments.txt
+
+Hash: a814d2d48078dffe11d661456c1062ad9e6bad96
+Type: commit
+tree <span class="hljs-number">56</span>cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
+author Jesse Hill &lt;jessebhill@gmail.com&gt; <span class="hljs-number">1472482925</span> -<span class="hljs-number">0400</span>
+committer Jesse Hill &lt;jessebhill@gmail.com&gt; <span class="hljs-number">1472482925</span> -<span class="hljs-number">0400</span>
+
+Adds comments file
+
+Hash: d65a67c2695f0252b4dd846ca20a60ee9dc1f981
+Type: blob
+It<span class="hljs-string">'s fun to write Clojure code.
+</span></code></pre>
+<p>Ok - that it looks like we have a new <strong>commit</strong> object. Notice that the first line of the commit points to a tree object at <strong>a814</strong>. That seems to match up to our tree object from the previous step. The commit contains author and committer meta-data as well as timestamps. You’ll also notice the commit comment at the end.</p>
+<blockquote>
+<p>Each time you make a commit, git will write a new tree object to the store on its own. We took the extra step on our own here just to be more explicit.</p>
+</blockquote>
+<h3><a id="When_are_Objects_Added_323"></a>When are Objects Added?</h3>
+<p>Let’s try adding some more objects.</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">'No seriously, Clojure is really fun!'</span> &gt;&gt; another-comment.txt
+</code></pre>
+<p>Ok, now how many objects do we have?</p>
+<pre><code class="language-bash">$ find .git/objects -type f | wc <span class="hljs-operator">-l</span>
+       <span class="hljs-number">3</span>
+</code></pre>
+<p>Still 3 - just creating the file wasn’t enough to generate an object. Let’s add the file to the staging area and try again:</p>
+<pre><code class="language-bash">$ git add another-comment.txt
+$ find .git/objects -type f | wc <span class="hljs-operator">-l</span>
+       <span class="hljs-number">4</span>
+</code></pre>
+<p>Ok! That did it - adding the file to the staging area caused an object to be created. Let’s take a peek at the objects:</p>
+<pre><code class="language-bash">$ tree .git/objects/
+.git/objects/
+├── <span class="hljs-number">56</span>
+│   └── cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
+├── <span class="hljs-number">5</span>e
+│   └── <span class="hljs-number">06553</span>fe36d4faf161cebbb263b07f354379735
+├── a8
+│   └── <span class="hljs-number">14</span>d2d48078dffe11d661456c1062ad9e6bad96
+├── d6
+│   └── <span class="hljs-number">5</span>a67c2695f0252b4dd846ca20a60ee9dc1f981
+├── info
+└── pack
+
+<span class="hljs-number">6</span> directories, <span class="hljs-number">4</span> files
+</code></pre>
+<p>Now, let’s really express our enthusiasm here:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">'Clojure is great!!!'</span> &gt;&gt; another-comment.txt
+$ git add another-comment.txt
+$ find .git/objects -type f | wc <span class="hljs-operator">-l</span>
+       <span class="hljs-number">5</span>
+</code></pre>
+<p>We’re up to 5 objects now. You might have only expected four objects - one for each file, one for our tree and commit. We have 5 because the object for the version of the file that was staged but not committed is still here. It’s a dangling object - it’s in our repository but there’s no commit pointing to it and the index is no longer referencing it.</p>
+<p>We can see this by running the <strong>git fsck</strong> command:</p>
+<pre><code class="language-bash">$ git fsck
+Checking object directories: <span class="hljs-number">100</span>% (<span class="hljs-number">256</span>/<span class="hljs-number">256</span>), done.
+dangling blob <span class="hljs-number">5</span>e06553fe36d4faf161cebbb263b07f354379735
+</code></pre>
+<p>Now what happens, if we copy and add our latest file:</p>
+<pre><code class="language-bash">$ cp another-comment.txt another-comment-copy.txt
+$ git add another-comment-copy.txt
+$ find .git/objects -type f | wc <span class="hljs-operator">-l</span>
+       <span class="hljs-number">5</span>
+</code></pre>
+<p>Woah! Interesting! Did you expect 6? We still have 5, so no new object was created!</p>
+<p>If we stop and think about what we’ve learned so far though, this should make sense. Git stores the file by writing it to a path based on the file content hash. Since the content is identical, git writes to the same location, so there’s no duplicated version of the file.</p>
+<p>Now let’s commit and look at the new objects.</p>
+<pre><code class="language-bash">$ git commit -m <span class="hljs-string">"Adds more comment files"</span>
+[master <span class="hljs-number">7</span>c8f6c1] Adds more comment files
+ <span class="hljs-number">2</span> files changed, <span class="hljs-number">4</span> insertions(+)
+ create mode <span class="hljs-number">100644</span> another-comment-copy.txt
+ create mode <span class="hljs-number">100644</span> another-comment.txt
+
+$ ruby cat-objects.rb
+Object: .git/objects/<span class="hljs-number">0</span>a/<span class="hljs-number">44</span>c4a16f8ffc20b657409872a46030991382c4
+Hash: <span class="hljs-number">0</span>a44c4a16f8ffc20b657409872a46030991382c4
+Type: blob
+No seriously, Clojure is really fun!
+Clojure is great!!!
+
+Object: .git/objects/<span class="hljs-number">56</span>/cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
+Hash: <span class="hljs-number">56</span>cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
+Type: tree
+<span class="hljs-number">100644</span> blob d65a67c2695f0252b4dd846ca20a60ee9dc1f981    comments.txt
+
+Object: .git/objects/<span class="hljs-number">5</span>e/<span class="hljs-number">06553</span>fe36d4faf161cebbb263b07f354379735
+Hash: <span class="hljs-number">5</span>e06553fe36d4faf161cebbb263b07f354379735
+Type: blob
+No seriously, Clojure is really fun!
+
+Object: .git/objects/<span class="hljs-number">7</span>c/<span class="hljs-number">8</span>f6c12a080d136516634f9f76534a7dc291a54
+Hash: <span class="hljs-number">7</span>c8f6c12a080d136516634f9f76534a7dc291a54
+Type: commit
+tree af1f9760ba183aafa6dddff77d98d68be03102<span class="hljs-built_in">cd</span>
+parent a814d2d48078dffe11d661456c1062ad9e6bad96
+author Jesse Hill &lt;jessebhill@gmail.com&gt; <span class="hljs-number">1472484323</span> -<span class="hljs-number">0400</span>
+committer Jesse Hill &lt;jessebhill@gmail.com&gt; <span class="hljs-number">1472484323</span> -<span class="hljs-number">0400</span>
+
+Adds more comment files
+
+Object: .git/objects/a8/<span class="hljs-number">14</span>d2d48078dffe11d661456c1062ad9e6bad96
+Hash: a814d2d48078dffe11d661456c1062ad9e6bad96
+Type: commit
+tree <span class="hljs-number">56</span>cb5ecac8e9e2844133c526ae2ef9b7f7b191a5
+author Jesse Hill &lt;jessebhill@gmail.com&gt; <span class="hljs-number">1472482925</span> -<span class="hljs-number">0400</span>
+committer Jesse Hill &lt;jessebhill@gmail.com&gt; <span class="hljs-number">1472482925</span> -<span class="hljs-number">0400</span>
+
+Adds comments file
+
+Object: .git/objects/af/<span class="hljs-number">1</span>f9760ba183aafa6dddff77d98d68be03102<span class="hljs-built_in">cd</span>
+Hash: af1f9760ba183aafa6dddff77d98d68be03102<span class="hljs-built_in">cd</span>
+Type: tree
+<span class="hljs-number">100644</span> blob <span class="hljs-number">0</span>a44c4a16f8ffc20b657409872a46030991382c4    another-comment-copy.txt
+<span class="hljs-number">100644</span> blob <span class="hljs-number">0</span>a44c4a16f8ffc20b657409872a46030991382c4    another-comment.txt
+<span class="hljs-number">100644</span> blob d65a67c2695f0252b4dd846ca20a60ee9dc1f981    comments.txt
+
+Object: .git/objects/d6/<span class="hljs-number">5</span>a67c2695f0252b4dd846ca20a60ee9dc1f981
+Hash: d65a67c2695f0252b4dd846ca20a60ee9dc1f981
+Type: blob
+It<span class="hljs-string">'s fun to write Clojure code.
+</span></code></pre>
+<p>If you’ve followed the steps so far, you should have a tree object with the <strong>af1f</strong> hash like the one shown above. As we might have expected - the tree points to the same object hash for both new files even though the file names are different.</p>
+<h3><a id="Nested_Trees_441"></a>Nested Trees</h3>
+<p>Ok, let’s move our copied file to a sub-directory, add it, and commit:</p>
+<pre><code class="language-bash">$ mkdir copies
+$ mv another-comment-copy.txt copies
+$ git add copies
+$ git write-tree
+f5df18cb5709b6259b505825b60d50e008b5a9ee
+</code></pre>
+<p>Using the hash printed out by <strong>git write-tree</strong> we can inspect our repository’s new root dir:</p>
+<pre><code class="language-bash">$ git cat-file -p f5df
+<span class="hljs-number">100644</span> blob <span class="hljs-number">0</span>a44c4a16f8ffc20b657409872a46030991382c4    another-comment-copy.txt
+<span class="hljs-number">100644</span> blob <span class="hljs-number">0</span>a44c4a16f8ffc20b657409872a46030991382c4    another-comment.txt
+<span class="hljs-number">100644</span> blob d65a67c2695f0252b4dd846ca20a60ee9dc1f981    comments.txt
+<span class="hljs-number">040000</span> tree <span class="hljs-number">4</span>d1a9b3cf659a6e2cdc3d66fe9cbef944c03cc61    copies
+</code></pre>
+<p>And we can use the <strong>4d1a</strong> hash listed to view our new directory tree:</p>
+<pre><code class="language-bash">$ git cat-file -p <span class="hljs-number">4</span>d1a
+<span class="hljs-number">100644</span> blob <span class="hljs-number">0</span>a44c4a16f8ffc20b657409872a46030991382c4    another-comment-copy.txt
+</code></pre>
+<p>So as you can see, the tree object is really more of a node object. And a tree can reference other trees. One important thing to note here is that a commit references the tree that represents the root directory and so from a commit we know the state of the entire working directory.</p>
+<h3><a id="Tag_Objects_465"></a>Tag Objects</h3>
+<p>Let’s celebrate our success so far by tagging our work:</p>
+<pre><code class="language-bash">$ git tag <span class="hljs-operator">-a</span> v1.<span class="hljs-number">0</span> -m <span class="hljs-string">"Our first version"</span>
+</code></pre>
+<p>We can see our tag in the tags directory (not the objects directory!).</p>
+<pre><code class="language-bash">$ ls .git/refs/tags/
+v1.<span class="hljs-number">0</span>
+</code></pre>
+<p>What’s in the file? (Note that again, due to timestamps, your hash will vary)</p>
+<pre><code class="language-bash">$ cat .git/refs/tags/v1.<span class="hljs-number">0</span>
+d0cf7f0c87fea8f38069fda6ebcad5f9e616848b
+</code></pre>
+<p>Ok. What if we use cat-file on that hash?</p>
+<pre><code class="language-bash">$ git cat-file -p d0cf
+object d0308ae582a30751457b05f6450eeb898fe960a7
+<span class="hljs-built_in">type</span> commit
+tag v1.<span class="hljs-number">0</span>
+tagger Jesse Hill &lt;jessebhill@gmail.com&gt; <span class="hljs-number">1471471562</span> -<span class="hljs-number">0400</span>
+
+Our first version
+</code></pre>
+<p>Cool! And if we check the objects directory, we will see that our tag is just another object living in our objects directory.</p>
+<h2><a id="Working_with_Tags_492"></a>Working with Tags</h2>
+<p>There are many ways to refer to commits, so let’s explore this area a little bit. Let’s say your history looks something like this:</p>
+<pre><code class="language-bash">$ git <span class="hljs-built_in">log</span>
+commit <span class="hljs-number">7</span>c8f6c12a080d136516634f9f76534a7dc291a54
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Mon Aug <span class="hljs-number">29</span> <span class="hljs-number">11</span>:<span class="hljs-number">25</span>:<span class="hljs-number">23</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Adds more comment files
+
+commit a814d2d48078dffe11d661456c1062ad9e6bad96
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Mon Aug <span class="hljs-number">29</span> <span class="hljs-number">11</span>:<span class="hljs-number">02</span>:<span class="hljs-number">05</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Adds comments file
+</code></pre>
+<p>You can deduce from the log that the tip of master is the commit <strong>7c8f</strong>. We can confirm that hash by inspecting the information in our .git directory.</p>
+<pre><code class="language-bash">$ cat .git/HEAD
+ref: refs/heads/master
+$ cat .git/refs/heads/master
+<span class="hljs-number">7</span>c8f6c12a080d136516634f9f76534a7dc291a54
+</code></pre>
+<p>There is however a simpler way. We can use rev-parse:</p>
+<pre><code class="language-bash">$ git rev-parse HEAD
+<span class="hljs-number">7</span>c8f6c12a080d136516634f9f76534a7dc291a54
+</code></pre>
+<p>And yep, it matches. Rev-parse is a helpful tool for learning how to use tag references:</p>
+<pre><code class="language-bash">$ git rev-parse HEAD~<span class="hljs-number">1</span>
+a814d2d48078dffe11d661456c1062ad9e6bad96
+$ git rev-parse HEAD^<span class="hljs-number">1</span>
+a814d2d48078dffe11d661456c1062ad9e6bad96
+$ git rev-parse HEAD@{<span class="hljs-number">15</span>.minutes.ago}
+git rev-parse HEAD@{<span class="hljs-number">15</span>.minutes.ago}
+$ git rev-parse HEAD@{yesterday}
+warning: Log <span class="hljs-keyword">for</span> <span class="hljs-string">'HEAD'</span> only goes back to Wed, <span class="hljs-number">17</span> Aug <span class="hljs-number">2016</span> <span class="hljs-number">17</span>:<span class="hljs-number">43</span>:<span class="hljs-number">12</span> -<span class="hljs-number">0400</span>.
+git rev-parse HEAD@{<span class="hljs-number">15</span>.minutes.ago}
+</code></pre>
+<p>Cool. So if you’re wondering what the difference is between <strong>HEAD~2</strong> and <strong>HEAD^2</strong>, rev-parse can help you out. Note also that git can find commits based on time ago (watch out for spaces - you’ll need to quote things like “HEAD@{15 minutes ago}” or use appropriate separator characters (periods work, but there are other options).</p>
+<p>You can also of course use it to inspect the hashes for branches.</p>
+<pre><code class="language-bash">$ git rev-parse master
+<span class="hljs-number">7</span>c8f6c12a080d136516634f9f76534a7dc291a54
+</code></pre>
+<h2><a id="Rewriting_History_540"></a>Rewriting History</h2>
+<blockquote>
+<p>Rewriting history is a dangerous thing to do for any commits that have been shared with others. The reason is that all methods for rewriting history create new commmits, and can remove references to pushed commits. Folks working with those commits may find themselves in a strange state after pulling your code. So do be careful.</p>
+</blockquote>
+<h3><a id="Ammending_Commits_543"></a>Ammending Commits</h3>
+<p>Ok, let’s start with a clean repository and add a commit:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .. &amp;&amp; rm -rf temp-repo &amp;&amp; mkdir temp-repo &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo &amp;&amp; git init
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"This workshop - seriously, amazing."</span> &gt;&gt; comment.txt
+$ git add .
+$ git commit -m <span class="hljs-string">"Adds comment file"</span>
+[master (root-commit) <span class="hljs-number">3174</span>da9] Adds comment file
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
+ create mode <span class="hljs-number">100644</span> comment.txt
+</code></pre>
+<p>Ok great. But now I’m feeling like maybe we should tone it down a little? Let’s edit the file (I used vim) to say this instead:</p>
+<blockquote>
+<p>This workshop - it’s not bad.</p>
+</blockquote>
+<p>Next let’s stage it:</p>
+<pre><code class="language-bash">$ git add comment.txt
+</code></pre>
+<p>Now, normally we might just commit, but if we want folks to think we’re humble and that we aren’t getting overly excited, it’d be nice if the previous commit were to “go away”. So let’s ammend that previous commit instead:</p>
+<pre><code class="language-bash">$ git commit --amend -m <span class="hljs-string">"Adds comment file"</span>
+[master e6f5dbe] Adds comment file
+ Date: Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">34</span>:<span class="hljs-number">52</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
+ create mode <span class="hljs-number">100644</span> comment.txt
+</code></pre>
+<p>And now if we check our log, we have just the one commit.</p>
+<pre><code class="language-bash">$ git <span class="hljs-built_in">log</span>
+commit e6f5dbe006a1800604859f60918eb407923c6315
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">34</span>:<span class="hljs-number">52</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Adds comment file
+</code></pre>
+<p>This is a feature you might find yourself using frequently. We often forget to add a file, we regret a comment, or we find linting errors or something of that sort. Ammending let’s us eliminate the “noise” commits that come from fixing these trivial errors.</p>
+<h3><a id="Interactive_Rebasing_580"></a>Interactive Rebasing</h3>
+<p>Let’s add a couple more commits.</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"This is a reasonable message"</span> &gt;&gt; reasonable-<span class="hljs-number">1</span>.txt
+$ git add reasonable-<span class="hljs-number">1</span>.txt &amp;&amp; git commit -m <span class="hljs-string">"Reasonable message"</span>
+[master d620e25] Reasonable message
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
+ create mode <span class="hljs-number">100644</span> reasonable-<span class="hljs-number">1</span>.txt
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Woah, crazy town"</span> &gt;&gt; crazy.txt
+$ git add crazy.txt &amp;&amp; git commit -m <span class="hljs-string">"Really losing it here"</span>
+[master <span class="hljs-number">83501</span>d0] Really losing it here
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
+ create mode <span class="hljs-number">100644</span> crazy.txt
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"This is another reasonable message"</span> &gt;&gt; reasonable-<span class="hljs-number">2</span>.txt
+$ git add reasonable-<span class="hljs-number">2</span>.txt &amp;&amp; git commit -m <span class="hljs-string">"Another reasonable meessage"</span>
+[master <span class="hljs-number">57445</span>bc] Another reasonable meessage
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">2</span> insertions(+)
+ create mode <span class="hljs-number">100644</span> reasonable-<span class="hljs-number">2</span>.txt
+</code></pre>
+<p>Ok, so now our history looks something like:</p>
+<pre><code class="language-bash">$ git <span class="hljs-built_in">log</span>
+commit <span class="hljs-number">57445</span>bca7e92fe8849b69435b144ab36252ce8b0
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">43</span>:<span class="hljs-number">54</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Another reasonable meessage
+
+commit <span class="hljs-number">83501</span>d0fad9d3fb9c471f506120763b2d93bd227
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">42</span>:<span class="hljs-number">10</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Really losing it here
+
+commit d620e254b5c28ed27729b5<span class="hljs-built_in">cd</span>8feb7ac6539f9605
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">41</span>:<span class="hljs-number">08</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Reasonable message
+
+commit e6f5dbe006a1800604859f60918eb407923c6315
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">34</span>:<span class="hljs-number">52</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Adds comment file
+</code></pre>
+<p>Maybe that second commit isn’t so good. Let’s rebase to get rid of it:</p>
+<pre><code class="language-bash">$ git rebase --interactive HEAD~<span class="hljs-number">3</span>
+</code></pre>
+<p>We’re telling git that we want to do an interactive rebase and we’re giving it a reference to a commit to start the rebase from. It’s important to pick a commit far enough back to include the changes we want to modify. It’s ok if you go a little too far back. You should see something like:</p>
+<pre><code class="language-bash">  <span class="hljs-number">1</span> pick d620e25 Reasonable message
+  <span class="hljs-number">2</span> pick <span class="hljs-number">83501</span>d0 Really losing it here
+  <span class="hljs-number">3</span> pick <span class="hljs-number">57445</span>bc Another reasonable meessage
+  <span class="hljs-number">4</span>
+  <span class="hljs-number">5</span> <span class="hljs-comment"># Rebase e6f5dbe..57445bc onto e6f5dbe (3 command(s))</span>
+  <span class="hljs-number">6</span> <span class="hljs-comment">#</span>
+  <span class="hljs-number">7</span> <span class="hljs-comment"># Commands:</span>
+  <span class="hljs-number">8</span> <span class="hljs-comment"># p, pick = use commit</span>
+  <span class="hljs-number">9</span> <span class="hljs-comment"># r, reword = use commit, but edit the commit message</span>
+ <span class="hljs-number">10</span> <span class="hljs-comment"># e, edit = use commit, but stop for amending</span>
+ <span class="hljs-number">11</span> <span class="hljs-comment"># s, squash = use commit, but meld into previous commit</span>
+ <span class="hljs-number">12</span> <span class="hljs-comment"># f, fixup = like "squash", but discard this commit's log message</span>
+ <span class="hljs-number">13</span> <span class="hljs-comment"># x, exec = run command (the rest of the line) using shell</span>
+ <span class="hljs-number">14</span> <span class="hljs-comment">#</span>
+ <span class="hljs-number">15</span> <span class="hljs-comment"># These lines can be re-ordered; they are executed from top to bottom.</span>
+ <span class="hljs-number">16</span> <span class="hljs-comment">#</span>
+ <span class="hljs-number">17</span> <span class="hljs-comment"># If you remove a line here THAT COMMIT WILL BE LOST.</span>
+ <span class="hljs-number">18</span> <span class="hljs-comment">#</span>
+ <span class="hljs-number">19</span> <span class="hljs-comment"># However, if you remove everything, the rebase will be aborted.</span>
+ <span class="hljs-number">20</span> <span class="hljs-comment">#</span>
+ <span class="hljs-number">21</span> <span class="hljs-comment"># Note that empty commits are commented out</span>
+</code></pre>
+<p>Let’s just delete that second line, then save and exit.</p>
+<p>Check your history:</p>
+<pre><code class="language-bash">$ git <span class="hljs-built_in">log</span>
+commit <span class="hljs-number">0854128</span>ec3e6536827c267934a67b5d36a4d98bd
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">43</span>:<span class="hljs-number">54</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Another reasonable meessage
+
+commit d620e254b5c28ed27729b5<span class="hljs-built_in">cd</span>8feb7ac6539f9605
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">41</span>:<span class="hljs-number">08</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Reasonable message
+
+commit e6f5dbe006a1800604859f60918eb407923c6315
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">34</span>:<span class="hljs-number">52</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Adds comment file
+</code></pre>
+<p>And voila, we’re back to being reasonable developers. You can use the other commands here to combine commits, split commits, change messages on commits, etc.</p>
+<blockquote>
+<p>One interesting thing to note is that the hash for the first commit (d620 here) does not change but the hash for commit 5744 has. This is of course because commits include the reference to their parent and for the second commit, the parent has changed. This should help explain why rebasing causes trouble for folks who already have your commits - the commits aren’t simply moved - the old commits are no longer referenced and new commits take their place as needed.</p>
+</blockquote>
+<p>I’d recommend creating some more commits here and playing around with the various options.</p>
+<h2><a id="Reset_683"></a>Reset</h2>
+<p>Ok, let’s talk about git reset. We have 3 modes - soft, hard, and mixed. What do these things mean again? And which mode do we want?</p>
+<p>Well, we know that git has a staging area - we have to add files to this staging area before we can create a commit. This staging area is called the <em>index</em>. So, at any time, we have three interesting views of the contents of your repository:</p>
+<ul>
+<li>the HEAD commit, the last committed state</li>
+<li>the index - or the staged state of your directory</li>
+<li>the working directory - the actual current contents</li>
+</ul>
+<p>We’ve seen that objects are created for your content when you add a file to the staging area, so if we’ve made a mistake, git can restore either a committed version of a file or the contents of the staging area.</p>
+<p>Once again, let’s start with a clean repository and add a commit:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .. &amp;&amp; rm -rf temp-repo &amp;&amp; mkdir temp-repo &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo &amp;&amp; git init
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"I'm ready to reset some changes."</span> &gt;&gt; thoughts.txt
+$ git add . &amp;&amp; git commit -m <span class="hljs-string">"Adds thoughts file"</span>
+[master (root-commit) fe307de] Adds thoughts file
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
+ create mode <span class="hljs-number">100644</span> thoughts.txt
+</code></pre>
+<p>Then let’s say we make this huge mistake:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"I really want to spend some time with php this week"</span> &gt;&gt; thoughts.txt
+</code></pre>
+<p>We can see that we have files in our working directory that are not in the index:</p>
+<pre><code class="language-bash">$ git status
+On branch master
+Changes not staged <span class="hljs-keyword">for</span> commit:
+  (use <span class="hljs-string">"git add &lt;file&gt;..."</span> to update what will be committed)
+  (use <span class="hljs-string">"git checkout -- &lt;file&gt;..."</span> to discard changes <span class="hljs-keyword">in</span> working directory)
+
+    modified:   thoughts.txt
+
+no changes added to commit (use <span class="hljs-string">"git add"</span> and/or <span class="hljs-string">"git commit -a"</span>)
+</code></pre>
+<p>To restore the file, we can simply check it out again:</p>
+<pre><code class="language-bash">$ git checkout -- thoughts.txt
+</code></pre>
+<p>And now we’re back to where we were.</p>
+<blockquote>
+<p>Note - the content was not added to the index and so it’s not in our objects directory. It’s gone forever.</p>
+</blockquote>
+<p>What if we’d added the file to the index?</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"I really want to spend some time with php this week"</span> &gt;&gt; thoughts.txt
+$ git add thoughts.txt
+$ git status
+On branch master
+Changes to be committed:
+  (use <span class="hljs-string">"git reset HEAD &lt;file&gt;..."</span> to unstage)
+
+    modified:   thoughts.txt
+</code></pre>
+<p>Now we have two options. We can do a mixed reset (the default):</p>
+<pre><code class="language-bash">$ git reset HEAD
+Unstaged changes after reset:
+M   thoughts.txt
+$ git status
+On branch master
+Changes not staged <span class="hljs-keyword">for</span> commit:
+  (use <span class="hljs-string">"git add &lt;file&gt;..."</span> to update what will be committed)
+  (use <span class="hljs-string">"git checkout -- &lt;file&gt;..."</span> to discard changes <span class="hljs-keyword">in</span> working directory)
+
+    modified:   thoughts.txt
+
+no changes added to commit (use <span class="hljs-string">"git add"</span> and/or <span class="hljs-string">"git commit -a"</span>)
+</code></pre>
+<p>At this point, the index has been reset to look like the HEAD commit but our directory contents remain unchanged.</p>
+<p>We can also do a hard reset:</p>
+<pre><code class="language-bash">$ git reset --hard HEAD
+HEAD is now at fe307de Adds thoughts file
+$ git status
+On branch master
+nothing to commit, working directory clean
+</code></pre>
+<p>So now our file contents have been blown away. In this case though, we DID add the file to the index. So the blob should be out there somewhere. Let’s see if we can find it:</p>
+<pre><code class="language-bash">$ git fsck
+Checking object directories: <span class="hljs-number">100</span>% (<span class="hljs-number">256</span>/<span class="hljs-number">256</span>), done.
+dangling blob <span class="hljs-number">62</span>af7c2b59a7abbaac32e774433d8c7a2c7860f5
+</code></pre>
+<p>Ok, that looks like it could be it.</p>
+<pre><code class="language-bash">$ git cat-file -p <span class="hljs-number">62</span>af
+I<span class="hljs-string">'m ready to reset some changes.
+I really want to spend some time with php this week
+</span></code></pre>
+<p>Sure enough! That’s it. We can recover it by doing:</p>
+<pre><code class="language-bash">$ git cat-file -p <span class="hljs-number">62</span>af &gt; thoughts.txt
+</code></pre>
+<p>Then commit:</p>
+<pre><code class="language-bash">$ git add thoughts.txt &amp;&amp; git commit -m <span class="hljs-string">"Dangerous thoughts"</span>
+[master <span class="hljs-number">82</span>f16c1] Dangerous thoughts
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
+</code></pre>
+<p>Ok, so now we have this commit, and we’re having regrets. Since it’s the top commit, we could simply <strong>-amend</strong> it. But let’s see what we can do with reset (amend actually does a reset under the covers for you). We’ll go back to the previous commit</p>
+<pre><code class="language-bash">$ git reset --soft HEAD~<span class="hljs-number">1</span>
+$ git status
+On branch master
+Changes to be committed:
+  (use <span class="hljs-string">"git reset HEAD &lt;file&gt;..."</span> to unstage)
+
+    modified:   thoughts.txt
+</code></pre>
+<p>Ok! So the soft reset moved the HEAD to the commit we specified, but did not change the index. If we instead use the default mixed mode:</p>
+<pre><code class="language-bash">$ git reset HEAD
+Unstaged changes after reset:
+M   thoughts.txt
+$ git status
+On branch master
+Changes not staged <span class="hljs-keyword">for</span> commit:
+  (use <span class="hljs-string">"git add &lt;file&gt;..."</span> to update what will be committed)
+  (use <span class="hljs-string">"git checkout -- &lt;file&gt;..."</span> to discard changes <span class="hljs-keyword">in</span> working directory)
+
+    modified:   thoughts.txt
+
+no changes added to commit (use <span class="hljs-string">"git add"</span> and/or <span class="hljs-string">"git commit -a"</span>)
+</code></pre>
+<p>Then we reset the index to match the HEAD, but not the working directory. A hard reset resets all three:</p>
+<pre><code class="language-bash">$ git reset --hard HEAD
+HEAD is now at fe307de Adds thoughts file
+$ git status
+On branch master
+nothing to commit, working directory clean
+</code></pre>
+<p>What if we want to recover that lost commit now? Let’s try git fsck again:</p>
+<pre><code class="language-bash">$ git fsck
+Checking object directories: <span class="hljs-number">100</span>% (<span class="hljs-number">256</span>/<span class="hljs-number">256</span>), done.
+</code></pre>
+<p>Interesting, it’s not listed as a dangling object. How do we find our lost commit? We can use the reflog:</p>
+<pre><code class="language-bash">$ git reflog
+<span class="hljs-number">7</span>eaf792 HEAD@{<span class="hljs-number">0</span>}: reset: moving to HEAD~<span class="hljs-number">1</span>
+de785d9 HEAD@{<span class="hljs-number">1</span>}: commit: Dangerous thoughts
+<span class="hljs-number">7</span>eaf792 HEAD@{<span class="hljs-number">2</span>}: commit (initial): Adds thoughts file
+</code></pre>
+<p>Ok there it is. If we want to recover it, we have a couple options. One is that we could reset to point to that commit directly. But what if we’ve made additional commits since we parted ways? Let’s try it.</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Moving along"</span> &gt;&gt; thoughts.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"New content"</span>
+[master a7eeaff] New content
+ <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
+</code></pre>
+<p>Ok, now we don’t simply want to reset because we’ll lose our shiny new commit. But we can check out the lost commit and merge it back in.</p>
+<pre><code class="language-bash">$ git reflog
+<span class="hljs-number">98</span>ce561 HEAD@{<span class="hljs-number">0</span>}: commit: New content
+<span class="hljs-number">7</span>eaf792 HEAD@{<span class="hljs-number">1</span>}: reset: moving to HEAD~<span class="hljs-number">1</span>
+de785d9 HEAD@{<span class="hljs-number">2</span>}: commit: Dangerous thoughts
+<span class="hljs-number">7</span>eaf792 HEAD@{<span class="hljs-number">3</span>}: commit (initial): Adds thoughts file
+$ git branch lost-commit HEAD@{<span class="hljs-number">2</span>}
+$ git status
+On branch master
+nothing to commit, working directory clean
+$ git merge lost-commit
+Auto-merging thoughts.txt
+CONFLICT (content): Merge conflict <span class="hljs-keyword">in</span> thoughts.txt
+Automatic merge failed; fix conflicts and <span class="hljs-keyword">then</span> commit the result.
+</code></pre>
+<p>Ok, good, we have a conflict now since both commits edited the file.</p>
+<pre><code class="language-bash">$ cat thoughts.txt
+I<span class="hljs-string">'m ready to reset some changes.
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+Moving along
+=======
+I really want to spend some time with php this week
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; lost-commit
+</span></code></pre>
+<p>We can resolve the diff and commit to complete our recovery.</p>
+<h2><a id="Finding_Commits_864"></a>Finding Commits</h2>
+<p>Let’s start again with a clean repo and add some commits:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .. &amp;&amp; rm -rf temp-repo &amp;&amp; mkdir temp-repo &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo &amp;&amp; git init
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"File 1"</span> &gt;&gt; file-<span class="hljs-number">1</span>.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"file-1.txt"</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Another file"</span> &gt;&gt; file-<span class="hljs-number">2</span>.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"A useless comment"</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Something about ZLib::Inflate"</span> &gt;&gt; file-<span class="hljs-number">3</span>.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Another useless comment"</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Something about ZLib::Deflate"</span> &gt;&gt; file-<span class="hljs-number">4</span>.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Yet another useless comment"</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Clojure is a lot of fun to write."</span> &gt;&gt; thoughts.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Thoughts about coding"</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Elm looks pretty interesting"</span> &gt;&gt; thoughts.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Thoughts about elm"</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Haskell was really enjoyable"</span> &gt;&gt; thoughts.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Thoughts about Haskell"</span>
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"I need to learn some F#"</span> &gt;&gt; thoughts.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Thoughts about F#"</span>
+</code></pre>
+<p>Ok. Now let’s say we want to know which commit added “file-1.txt”, how would we figure that out? In this case, we could probably just look through our git log because we’ve made the change recently and the comment mentions our file by name.</p>
+<h3><a id="Blame_878"></a>Blame</h3>
+<p>If it didn’t, we could of course use git blame. That would tell us something like:</p>
+<pre><code class="language-bash">$ git blame file-<span class="hljs-number">1</span>.txt
+^da08c5b (Jesse Hill <span class="hljs-number">2016</span>-<span class="hljs-number">08</span>-<span class="hljs-number">18</span> <span class="hljs-number">08</span>:<span class="hljs-number">27</span>:<span class="hljs-number">57</span> -<span class="hljs-number">0400</span> <span class="hljs-number">1</span>) File <span class="hljs-number">1</span>
+</code></pre>
+<h3><a id="Pickaxe_885"></a>Pickaxe</h3>
+<p>So we could use the hash from that line to identify the commit. Let’s say though we wanted to know all the commits that dealt with some particular term, across all files. We can use the pickaxe:</p>
+<pre><code class="language-bash">$ git <span class="hljs-built_in">log</span> -SZLib --pretty=oneline
+ee6302a1a9fd368<span class="hljs-built_in">fc</span>54a50db48bf37d350d5d332 Yet another useless comment
+<span class="hljs-number">334619042</span>b8804b7dca79a89891f82cfd155cebd Another useless comment
+</code></pre>
+<p>The -S option is referred to as the pickaxe and it searches for terms across commits. Be careful though the pickaxe looks for changes in the number of times the term is present. It will find both additions and deletions of the term. It won’t however find commits where the number of additions and deletions is the same.</p>
+<h3><a id="Bisect_894"></a>Bisect</h3>
+<p>Ok, one last method - git bisect.</p>
+<p>Let’s say we decide that we shouldn’t use ZLib::Inflate in our codebase. How do we find the commit that broke our branch? We can use git bisect, which basically let’s us do a binary search on the state of the branch.</p>
+<p>We start by telling git that we want to run bisect and that the current state is bad:</p>
+<pre><code class="language-bash">$ git bisect start
+$ git bisect bad
+</code></pre>
+<p>Now we need to tell it when we were last in a good state. It’s ok to err on the side of caution here. Let’s pick our root commit:</p>
+<pre><code class="language-bash">$ git bisect good HEAD~<span class="hljs-number">7</span>
+Bisecting: <span class="hljs-number">3</span> revisions left to <span class="hljs-built_in">test</span> after this (roughly <span class="hljs-number">2</span> steps)
+[ee6302a1a9fd368<span class="hljs-built_in">fc</span>54a50db48bf37d350d5d332] Yet another useless comment
+</code></pre>
+<p>So, what’s happened is that git has checked out commit ee63 and put us into a detached HEAD state. We can confirm this (your hash will vary):</p>
+<pre><code class="language-bash">$ cat .git/HEAD
+ee6302a1a9fd368<span class="hljs-built_in">fc</span>54a50db48bf37d350d5d332
+</code></pre>
+<p>Ok, so we need to figure out if the current version is good or bad. In our case, we can just do:</p>
+<pre><code class="language-bash">$ grep Inflate *
+file-<span class="hljs-number">3</span>.txt:Something about ZLib::Inflate
+</code></pre>
+<p>To tell that it’s bad. But you could build and run tests or whatever. So we’ll tell git that it’s bad:</p>
+<pre><code class="language-bash">$ git bisect bad
+Bisecting: <span class="hljs-number">0</span> revisions left to <span class="hljs-built_in">test</span> after this (roughly <span class="hljs-number">1</span> step)
+[<span class="hljs-number">334619042</span>b8804b7dca79a89891f82cfd155cebd] Another useless comment
+
+$ grep Inflate *
+file-<span class="hljs-number">3</span>.txt:Something about ZLib::Inflate
+</code></pre>
+<p>Still bad.</p>
+<pre><code class="language-bash">$ git bisect bad
+Bisecting: <span class="hljs-number">0</span> revisions left to <span class="hljs-built_in">test</span> after this (roughly <span class="hljs-number">0</span> steps)
+[<span class="hljs-number">3</span>c318a17679c779ce2ed053<span class="hljs-built_in">cd</span>92ee84b91eb75ff] A useless comment
+$ grep Inflate *
+</code></pre>
+<p>And now we’re at the good commit, prior to the Inflate getting added. Let’s tell git that we like this commit.</p>
+<pre><code class="language-bash">$ git bisect good
+<span class="hljs-number">334619042</span>b8804b7dca79a89891f82cfd155cebd is the first bad commit
+commit <span class="hljs-number">334619042</span>b8804b7dca79a89891f82cfd155cebd
+Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
+Date:   Thu Aug <span class="hljs-number">18</span> <span class="hljs-number">08</span>:<span class="hljs-number">28</span>:<span class="hljs-number">11</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+
+    Another useless comment
+
+:<span class="hljs-number">000000</span> <span class="hljs-number">100644</span> <span class="hljs-number">0000000000000000000000000000000000000000</span> <span class="hljs-number">022</span>f3f518b36b3438911b81ce4410aae4a26fb4d A  file-<span class="hljs-number">3</span>.txt
+</code></pre>
+<p>So there we are. <strong>3346</strong> introduces the badness. Be sure to use git bisect reset now to go back to our original location:</p>
+<pre><code class="language-bash">$ git bisect reset
+Previous HEAD position was <span class="hljs-number">3</span>c318a1... A useless comment
+Switched to branch <span class="hljs-string">'master'</span>
+</code></pre>
+<h2><a id="Git_Hooks_955"></a>Git Hooks</h2>
+<p>Git hooks are local to your clone and not distributed with the repo. You might be tempted to use hooks to run tests or something of that sort before allowing a push. Resist this temptation, use hooks only for non-critical tasks that run very quickly. Or use them to confuse your colleague. Let’s do that:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .git/hooks/
+$ cp pre-commit.sample pre-commit
+</code></pre>
+<p>Edit the pre-commit file to look like:</p>
+<pre><code class="language-bash">  <span class="hljs-number">1</span> <span class="hljs-built_in">echo</span> <span class="hljs-string">"No commits for you!"</span>
+  <span class="hljs-number">2</span> <span class="hljs-built_in">exit</span> <span class="hljs-number">1</span>
+</code></pre>
+<p>Now save and exit. You may need to make the file executable, if it isn’t already. Then try a commit:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Howdy"</span> &gt;&gt; hello.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Greetings"</span>
+No commits <span class="hljs-keyword">for</span> you!
+</code></pre>
+<p>And you should see in your log that you have no new commit. Refer to the <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks">hooks doc</a> for more info on hooks.</p>
+<h2><a id="Objects_and_Pack_Files_973"></a>Objects and Pack Files</h2>
+<p>Let’s start once again with a clean repo and add a commit:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .. &amp;&amp; rm -rf temp-repo &amp;&amp; mkdir temp-repo &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo &amp;&amp; git init
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Howdy"</span> &gt;&gt; hello.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Greetings"</span>
+</code></pre>
+<p>Now let’s take a look at our objects:</p>
+<pre><code class="language-bash">$ tree .git/objects
+.git/objects
+├── a5
+│   └── c5dd0<span class="hljs-built_in">fc</span>6c313159a69b1d19d7f61a9f978e8f1
+├── d1
+│   └── <span class="hljs-number">2</span>a3f36e0b24b4bb9bc3eafc3a89c8fe5eb63<span class="hljs-built_in">cd</span>
+├── <span class="hljs-built_in">fc</span>
+│   └── <span class="hljs-number">483</span>adb161ee8ae96d44267ab1ef169e40d25f8
+├── info
+└── pack
+</code></pre>
+<p>Let’s try something here:</p>
+<pre><code class="language-bash">$ git gc
+Counting objects: <span class="hljs-number">3</span>, done.
+Writing objects: <span class="hljs-number">100</span>% (<span class="hljs-number">3</span>/<span class="hljs-number">3</span>), done.
+Total <span class="hljs-number">3</span> (delta <span class="hljs-number">0</span>), reused <span class="hljs-number">0</span> (delta <span class="hljs-number">0</span>)
+</code></pre>
+<p>And take a look again:</p>
+<pre><code class="language-bash">$ tree .git/objects
+.git/objects
+├── info
+│   └── packs
+└── pack
+    ├── pack<span class="hljs-operator">-f</span>2264fa89b541c2b6ef46022b1c7e9aec0d3d2fe.idx
+    └── pack<span class="hljs-operator">-f</span>2264fa89b541c2b6ef46022b1c7e9aec0d3d2fe.pack
+
+<span class="hljs-number">2</span> directories, <span class="hljs-number">3</span> files
+</code></pre>
+<p>Woah, that’s interesting. We have pack files now instead of objects. I expect the <strong>git gc</strong> output will look familiar to you, you’ve likely seen it when running other commands like git push. Git normally runs this on it’s own at appropriate times to keep the repository size down.</p>
+<p>The objects we’ve seen up to this point are called “loose objects” - they’ve been zipped versions of a file’s content. With small files, this is no big deal, but you can imagine that having lots of versions of very large files would be a problem. <strong>git gc</strong> packs the loose objects into pack files. Pack files store the full contents of the file once and then deltas from the file for the other versions.</p>
+<p>Let’s try one more thing:</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Howdy there"</span> &gt;&gt; hello.txt &amp;&amp; git add .
+$ git reset --hard
+HEAD is now at d12a3f3 Greetings
+$ git fsck
+Checking object directories: <span class="hljs-number">100</span>% (<span class="hljs-number">256</span>/<span class="hljs-number">256</span>), done.
+Checking objects: <span class="hljs-number">100</span>% (<span class="hljs-number">3</span>/<span class="hljs-number">3</span>), done.
+dangling blob <span class="hljs-number">9779</span>c2e528757246e39f36e25bbc7162553f453f
+$ git gc
+Counting objects: <span class="hljs-number">3</span>, done.
+Writing objects: <span class="hljs-number">100</span>% (<span class="hljs-number">3</span>/<span class="hljs-number">3</span>), done.
+Total <span class="hljs-number">3</span> (delta <span class="hljs-number">0</span>), reused <span class="hljs-number">3</span> (delta <span class="hljs-number">0</span>)
+$ git fsck
+Checking object directories: <span class="hljs-number">100</span>% (<span class="hljs-number">256</span>/<span class="hljs-number">256</span>), done.
+Checking objects: <span class="hljs-number">100</span>% (<span class="hljs-number">3</span>/<span class="hljs-number">3</span>), done.
+dangling blob <span class="hljs-number">9779</span>c2e528757246e39f36e25bbc7162553f453f
+$ tree .git/objects
+.git/objects
+├── <span class="hljs-number">97</span>
+│   └── <span class="hljs-number">79</span>c2e528757246e39f36e25bbc7162553f453f
+├── info
+│   └── packs
+└── pack
+    ├── pack<span class="hljs-operator">-f</span>2264fa89b541c2b6ef46022b1c7e9aec0d3d2fe.idx
+    └── pack<span class="hljs-operator">-f</span>2264fa89b541c2b6ef46022b1c7e9aec0d3d2fe.pack
+
+<span class="hljs-number">3</span> directories, <span class="hljs-number">4</span> files
+</code></pre>
+<p>So that’s interesting. <strong>git gc</strong> didn’t remove the dangling blob. It turns out <strong>git gc</strong> only prunes objects older than a given threshold. See the <a href="https://git-scm.com/docs/git-gc">git gc doc</a> for configuration options.</p>
+<p>Let’s try one more thing:</p>
+<pre><code class="language-bash">$ git gc --prune=all
+Counting objects: <span class="hljs-number">3</span>, done.
+Writing objects: <span class="hljs-number">100</span>% (<span class="hljs-number">3</span>/<span class="hljs-number">3</span>), done.
+Total <span class="hljs-number">3</span> (delta <span class="hljs-number">0</span>), reused <span class="hljs-number">3</span> (delta <span class="hljs-number">0</span>)
+$ git fsck
+Checking object directories: <span class="hljs-number">100</span>% (<span class="hljs-number">256</span>/<span class="hljs-number">256</span>), done.
+Checking objects: <span class="hljs-number">100</span>% (<span class="hljs-number">3</span>/<span class="hljs-number">3</span>), done.
+</code></pre>
+<p>And now the dangling blob has been pruned. It’s gone forever!</p>
+
+</body></html>
