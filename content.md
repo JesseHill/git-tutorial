@@ -541,7 +541,7 @@ $ git rev-parse master
 ## Rewriting History
 >Rewriting history is a dangerous thing to do for any commits that have been shared with others. The reason is that all methods for rewriting history create new commmits, and can remove references to pushed commits. Folks working with those commits may find themselves in a strange state after pulling your code. So do be careful.
 
-### Ammending Commits
+### Amending Commits
 Ok, let's start with a clean repository and add a commit:
 ```bash
 $ cd .. && rm -rf temp-repo && mkdir temp-repo && cd temp-repo && git init
@@ -559,15 +559,15 @@ Next let's stage it:
 ```bash
 $ git add comment.txt
 ```
-Now, normally we might just commit, but if we want folks to think we're humble and that we aren't getting overly excited, it'd be nice if the previous commit were to "go away". So let's ammend that previous commit instead:
+Now, normally we might just commit, but if we want folks to think we're humble and that we aren't getting overly excited, it'd be nice if the previous commit were to "go away". So let's amend that previous commit instead:
 ```bash
-$ git commit --amend -m "Adds comment file"
-[master e6f5dbe] Adds comment file
- Date: Wed Aug 17 18:34:52 2016 -0400
+$ git commit --amend -m "Edited comment file"
+[master b0a69ff] Edited comment file
+ Date: Wed Sep 21 19:52:22 2016 -0400
  1 file changed, 1 insertion(+)
  create mode 100644 comment.txt
 ```
-And now if we check our log, we have just the one commit.
+And now if we check our log, even though we've run *git commit* twice, we will see just one commit and our history looks clean.
 ```bash
 $ git log
 commit e6f5dbe006a1800604859f60918eb407923c6315
@@ -576,7 +576,9 @@ Date:   Wed Aug 17 18:34:52 2016 -0400
 
     Adds comment file
 ```
-This is a feature you might find yourself using frequently. We often forget to add a file, we regret a comment, or we find linting errors or something of that sort. Ammending let's us eliminate the "noise" commits that come from fixing these trivial errors.
+This is a feature you might find yourself using frequently. We often forget to add a file, we regret a comment, or we find linting errors or something of that sort. Amending let's us eliminate the "noise" commits that come from fixing these trivial errors.
+
+>Note - If you run the *ruby cat-objects.rb* script, you'll see that we actually do still have our initial commit in our objects directory. The --amend writes a new commit - as it must since the referenced tree has changed as well as the timestamps - and points our history at that. So we do have two commits, but we won't push the unused commit when we sync our branch.
 
 ### Interactive Rebasing
 Let's add a couple more commits.

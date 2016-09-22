@@ -469,7 +469,7 @@ git rev-parse HEAD@{<span class="hljs-number">15</span>.minutes.ago}
 <blockquote>
 <p>Rewriting history is a dangerous thing to do for any commits that have been shared with others. The reason is that all methods for rewriting history create new commmits, and can remove references to pushed commits. Folks working with those commits may find themselves in a strange state after pulling your code. So do be careful.</p>
 </blockquote>
-<h3><a id="Ammending_Commits_543"></a>Ammending Commits</h3>
+<h3><a id="Amending_Commits_543"></a>Amending Commits</h3>
 <p>Ok, let’s start with a clean repository and add a commit:</p>
 <pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .. &amp;&amp; rm -rf temp-repo &amp;&amp; mkdir temp-repo &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo &amp;&amp; git init
 $ <span class="hljs-built_in">echo</span> <span class="hljs-string">"This workshop - seriously, amazing."</span> &gt;&gt; comment.txt
@@ -486,14 +486,14 @@ $ git commit -m <span class="hljs-string">"Adds comment file"</span>
 <p>Next let’s stage it:</p>
 <pre><code class="language-bash">$ git add comment.txt
 </code></pre>
-<p>Now, normally we might just commit, but if we want folks to think we’re humble and that we aren’t getting overly excited, it’d be nice if the previous commit were to “go away”. So let’s ammend that previous commit instead:</p>
-<pre><code class="language-bash">$ git commit --amend -m <span class="hljs-string">"Adds comment file"</span>
-[master e6f5dbe] Adds comment file
- Date: Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18</span>:<span class="hljs-number">34</span>:<span class="hljs-number">52</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
+<p>Now, normally we might just commit, but if we want folks to think we’re humble and that we aren’t getting overly excited, it’d be nice if the previous commit were to “go away”. So let’s amend that previous commit instead:</p>
+<pre><code class="language-bash">$ git commit --amend -m <span class="hljs-string">"Edited comment file"</span>
+[master b0a69ff] Edited comment file
+ Date: Wed Sep <span class="hljs-number">21</span> <span class="hljs-number">19</span>:<span class="hljs-number">52</span>:<span class="hljs-number">22</span> <span class="hljs-number">2016</span> -<span class="hljs-number">0400</span>
  <span class="hljs-number">1</span> file changed, <span class="hljs-number">1</span> insertion(+)
  create mode <span class="hljs-number">100644</span> comment.txt
 </code></pre>
-<p>And now if we check our log, we have just the one commit.</p>
+<p>And now if we check our log, even though we’ve run <em>git commit</em> twice, we will see just one commit and our history looks clean.</p>
 <pre><code class="language-bash">$ git <span class="hljs-built_in">log</span>
 commit e6f5dbe006a1800604859f60918eb407923c6315
 Author: Jesse Hill &lt;jessebhill@gmail.com&gt;
@@ -501,8 +501,11 @@ Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18
 
     Adds comment file
 </code></pre>
-<p>This is a feature you might find yourself using frequently. We often forget to add a file, we regret a comment, or we find linting errors or something of that sort. Ammending let’s us eliminate the “noise” commits that come from fixing these trivial errors.</p>
-<h3><a id="Interactive_Rebasing_580"></a>Interactive Rebasing</h3>
+<p>This is a feature you might find yourself using frequently. We often forget to add a file, we regret a comment, or we find linting errors or something of that sort. Amending let’s us eliminate the “noise” commits that come from fixing these trivial errors.</p>
+<blockquote>
+<p>Note - If you run the <em>ruby cat-objects.rb</em> script, you’ll see that we actually do still have our initial commit in our objects directory. The --amend writes a new commit - as it must since the referenced tree has changed as well as the timestamps - and points our history at that. So we do have two commits, but folks will see them as a single commit in the history.</p>
+</blockquote>
+<h3><a id="Interactive_Rebasing_582"></a>Interactive Rebasing</h3>
 <p>Let’s add a couple more commits.</p>
 <pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"This is a reasonable message"</span> &gt;&gt; reasonable-<span class="hljs-number">1</span>.txt
 $ git add reasonable-<span class="hljs-number">1</span>.txt &amp;&amp; git commit -m <span class="hljs-string">"Reasonable message"</span>
@@ -598,7 +601,7 @@ Date:   Wed Aug <span class="hljs-number">17</span> <span class="hljs-number">18
 <p>One interesting thing to note is that the hash for the first commit (d620 here) does not change but the hash for commit 5744 has. This is of course because commits include the reference to their parent and for the second commit, the parent has changed. This should help explain why rebasing causes trouble for folks who already have your commits - the commits aren’t simply moved - the old commits are no longer referenced and new commits take their place as needed.</p>
 </blockquote>
 <p>I’d recommend creating some more commits here and playing around with the various options.</p>
-<h2><a id="Reset_683"></a>Reset</h2>
+<h2><a id="Reset_685"></a>Reset</h2>
 <p>Ok, let’s talk about git reset. We have 3 modes - soft, hard, and mixed. What do these things mean again? And which mode do we want?</p>
 <p>Well, we know that git has a staging area - we have to add files to this staging area before we can create a commit. This staging area is called the <em>index</em>. So, at any time, we have three interesting views of the contents of your repository:</p>
 <ul>
@@ -756,7 +759,7 @@ I really want to spend some time with php this week
 &gt;&gt;&gt;&gt;&gt;&gt;&gt; lost-commit
 </span></code></pre>
 <p>We can resolve the diff and commit to complete our recovery.</p>
-<h2><a id="Finding_Commits_864"></a>Finding Commits</h2>
+<h2><a id="Finding_Commits_866"></a>Finding Commits</h2>
 <p>Let’s start again with a clean repo and add some commits:</p>
 <pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .. &amp;&amp; rm -rf temp-repo &amp;&amp; mkdir temp-repo &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo &amp;&amp; git init
 $ <span class="hljs-built_in">echo</span> <span class="hljs-string">"File 1"</span> &gt;&gt; file-<span class="hljs-number">1</span>.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"file-1.txt"</span>
@@ -769,19 +772,19 @@ $ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Haskell was
 $ <span class="hljs-built_in">echo</span> <span class="hljs-string">"I need to learn some F#"</span> &gt;&gt; thoughts.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Thoughts about F#"</span>
 </code></pre>
 <p>Ok. Now let’s say we want to know which commit added “file-1.txt”, how would we figure that out? In this case, we could probably just look through our git log because we’ve made the change recently and the comment mentions our file by name.</p>
-<h3><a id="Blame_878"></a>Blame</h3>
+<h3><a id="Blame_880"></a>Blame</h3>
 <p>If it didn’t, we could of course use git blame. That would tell us something like:</p>
 <pre><code class="language-bash">$ git blame file-<span class="hljs-number">1</span>.txt
 ^da08c5b (Jesse Hill <span class="hljs-number">2016</span>-<span class="hljs-number">08</span>-<span class="hljs-number">18</span> <span class="hljs-number">08</span>:<span class="hljs-number">27</span>:<span class="hljs-number">57</span> -<span class="hljs-number">0400</span> <span class="hljs-number">1</span>) File <span class="hljs-number">1</span>
 </code></pre>
-<h3><a id="Pickaxe_885"></a>Pickaxe</h3>
+<h3><a id="Pickaxe_887"></a>Pickaxe</h3>
 <p>So we could use the hash from that line to identify the commit. Let’s say though we wanted to know all the commits that dealt with some particular term, across all files. We can use the pickaxe:</p>
 <pre><code class="language-bash">$ git <span class="hljs-built_in">log</span> -SZLib --pretty=oneline
 ee6302a1a9fd368<span class="hljs-built_in">fc</span>54a50db48bf37d350d5d332 Yet another useless comment
 <span class="hljs-number">334619042</span>b8804b7dca79a89891f82cfd155cebd Another useless comment
 </code></pre>
 <p>The -S option is referred to as the pickaxe and it searches for terms across commits. Be careful though the pickaxe looks for changes in the number of times the term is present. It will find both additions and deletions of the term. It won’t however find commits where the number of additions and deletions is the same.</p>
-<h3><a id="Bisect_894"></a>Bisect</h3>
+<h3><a id="Bisect_896"></a>Bisect</h3>
 <p>Ok, one last method - git bisect.</p>
 <p>Let’s say we decide that we shouldn’t use ZLib::Inflate in our codebase. How do we find the commit that broke our branch? We can use git bisect, which basically let’s us do a binary search on the state of the branch.</p>
 <p>We start by telling git that we want to run bisect and that the current state is bad:</p>
@@ -831,7 +834,7 @@ Date:   Thu Aug <span class="hljs-number">18</span> <span class="hljs-number">08
 Previous HEAD position was <span class="hljs-number">3</span>c318a1... A useless comment
 Switched to branch <span class="hljs-string">'master'</span>
 </code></pre>
-<h2><a id="Git_Hooks_955"></a>Git Hooks</h2>
+<h2><a id="Git_Hooks_957"></a>Git Hooks</h2>
 <p>Git hooks are local to your clone and not distributed with the repo. You might be tempted to use hooks to run tests or something of that sort before allowing a push. Resist this temptation, use hooks only for non-critical tasks that run very quickly. Or use them to confuse your colleague. Let’s do that:</p>
 <pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .git/hooks/
 $ cp pre-commit.sample pre-commit
@@ -845,7 +848,7 @@ $ cp pre-commit.sample pre-commit
 No commits <span class="hljs-keyword">for</span> you!
 </code></pre>
 <p>And you should see in your log that you have no new commit. Refer to the <a href="https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks">hooks doc</a> for more info on hooks.</p>
-<h2><a id="Objects_and_Pack_Files_973"></a>Objects and Pack Files</h2>
+<h2><a id="Objects_and_Pack_Files_975"></a>Objects and Pack Files</h2>
 <p>Let’s start once again with a clean repo and add a commit:</p>
 <pre><code class="language-bash">$ <span class="hljs-built_in">cd</span> .. &amp;&amp; rm -rf temp-repo &amp;&amp; mkdir temp-repo &amp;&amp; <span class="hljs-built_in">cd</span> temp-repo &amp;&amp; git init
 $ <span class="hljs-built_in">echo</span> <span class="hljs-string">"Howdy"</span> &gt;&gt; hello.txt &amp;&amp; git add . &amp;&amp; git commit -m <span class="hljs-string">"Greetings"</span>
