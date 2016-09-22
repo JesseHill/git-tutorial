@@ -578,7 +578,7 @@ Date:   Wed Aug 17 18:34:52 2016 -0400
 ```
 This is a feature you might find yourself using frequently. We often forget to add a file, we regret a comment, or we find linting errors or something of that sort. Amending let's us eliminate the "noise" commits that come from fixing these trivial errors.
 
->Note - If you run the *ruby cat-objects.rb* script, you'll see that we actually do still have our initial commit in our objects directory. The --amend writes a new commit - as it must since the referenced tree has changed as well as the timestamps - and points our history at that. So we do have two commits, but we won't push the unused commit when we sync our branch.
+>Note - If you run the *ruby cat-objects.rb* script, you'll see that we actually do still have our initial commit in our objects directory. The --amend writes a new commit - as it must since the referenced tree has changed as well as the timestamps - and points our history at that. So we do have two commits, but folks will see them as a single commit in the history.
 
 ### Interactive Rebasing
 Let's add a couple more commits.
